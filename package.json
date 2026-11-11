@@ -7,6 +7,8 @@
 		"dev": "vp dev",
 		"build": "vp build",
 		"preview": "vp preview",
+		"start": "node server/start.mjs",
+		"test": "vp test",
 		"check": "vp check",
 		"lint": "vp lint",
 		"format": "vp fmt",

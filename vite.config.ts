@@ -25,7 +25,7 @@ export default defineConfig({
 	},
 	plugins: [devtools(), tanstackStart(), react({compiler: true}), tailwindcss()],
 	fmt: {
-		ignorePatterns: ["dist/**", "node_modules/**", "routeTree.gen.ts"],
+		ignorePatterns: ["dist/**", "node_modules/**", "routeTree.gen.ts", "skills/**"],
 		sortImports: {newlinesBetween: false},
 		sortTailwindcss: {stylesheet: "src/styles/globals.css"},
 		sortPackageJson: true,
