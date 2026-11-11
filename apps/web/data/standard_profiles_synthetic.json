@@ -1,0 +1,38 @@
+{
+	"solar_hub": {
+		"name": "Solar warehouse",
+		"sector": "Solar + warehouse",
+		"solar_kwp": 110,
+		"grid_segment": "GRN-DEMO-EAST (fictional)"
+	},
+	"bakery": {
+		"name": "Bakery & kitchens",
+		"sector": "Food production",
+		"solar_kwp": 12,
+		"grid_segment": "GRN-DEMO-EAST (fictional)"
+	},
+	"ev_depot": {
+		"name": "E-mobility depot",
+		"sector": "Electric vehicle charging",
+		"solar_kwp": 0,
+		"grid_segment": "GRN-DEMO-EAST (fictional)"
+	},
+	"cold_storage": {
+		"name": "Cold storage",
+		"sector": "Refrigeration",
+		"solar_kwp": 35,
+		"grid_segment": "GRN-DEMO-EAST (fictional)"
+	},
+	"factory": {
+		"name": "Flexible workshop",
+		"sector": "Light industry",
+		"solar_kwp": 24,
+		"grid_segment": "GRN-DEMO-EAST (fictional)"
+	},
+	"offices": {
+		"name": "Campus offices",
+		"sector": "Offices",
+		"solar_kwp": 18,
+		"grid_segment": "GRN-DEMO-EAST (fictional)"
+	}
+}

@@ -3,18 +3,25 @@ import {defineConfig} from "vite-plus";
 export default defineConfig({
 	defaultPackage: "./apps/landing",
 	fmt: {
-		// engines/ holds non-JS projects (the Python simulation) with their own tooling and generated outputs.
+		// engines/ holds non-JS projects with their own tooling and generated outputs.
 		ignorePatterns: [
 			"**/dist/**",
 			"**/node_modules/**",
 			"**/routeTree.gen.ts",
 			"skills/**",
+			"apps/web/hero-ui/src/components/ui/**",
+			"apps/web/hero-ui/src/hooks/**",
 			"engines/**",
+			"apps/web/static/**",
+			"apps/web/docs/**",
+			"apps/web/data/**",
+			".claude/**",
 			"pnpm-lock.yaml",
 		],
 		sortImports: {newlinesBetween: false},
 		overrides: [
 			{files: ["apps/landing/**"], options: {sortTailwindcss: {stylesheet: "apps/landing/src/styles/globals.css"}}},
+			{files: ["apps/web/hero-ui/**"], options: {sortTailwindcss: {stylesheet: "apps/web/hero-ui/src/theme.css"}}},
 		],
 		sortPackageJson: true,
 		useTabs: true,
@@ -23,7 +30,18 @@ export default defineConfig({
 		bracketSpacing: false,
 	},
 	lint: {
-		ignorePatterns: ["**/dist/**", "**/node_modules/**", "**/routeTree.gen.ts", "skills/**", "engines/**"],
+		ignorePatterns: [
+			"**/dist/**",
+			"**/node_modules/**",
+			"**/routeTree.gen.ts",
+			"skills/**",
+			"apps/web/hero-ui/src/components/ui/**",
+			"apps/web/hero-ui/src/hooks/**",
+			"engines/**",
+			"apps/web/static/**",
+			"apps/web/docs/**",
+			".claude/**",
+		],
 		categories: {correctness: "error", perf: "error"},
 		options: {typeAware: true, typeCheck: true},
 		plugins: ["react"],
@@ -79,5 +97,5 @@ export default defineConfig({
 		},
 	},
 	staged: {},
-	test: {projects: ["apps/landing"]},
+	test: {projects: ["apps/landing", "apps/web/hero-ui"]},
 });

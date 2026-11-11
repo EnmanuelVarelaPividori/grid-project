@@ -9,7 +9,9 @@
 		"build": "pnpm -r run build",
 		"check": "vp check",
 		"test": "vp test",
-		"format": "vp fmt"
+		"format": "vp fmt",
+		"dev:web": "pnpm --filter @gridshare/web dev",
+		"dev:api": "python3 apps/web/app.py"
 	},
 	"devDependencies": {
 		"@types/node": "^26.6.6",

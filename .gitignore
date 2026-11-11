@@ -29,3 +29,8 @@ Thumbs.db
 venv/
 __pycache__/
 *.py[cod]
+
+# Dashboard generated assets and local profiles
+apps/web/static/heroui/
+apps/web/data/*.sqlite3
+apps/web/data/*.sqlite3-*
