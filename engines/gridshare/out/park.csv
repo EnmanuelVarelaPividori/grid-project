@@ -1,0 +1,9 @@
+id,name,archetype,role,street,annual_kwh,pv_kwp,bess_kwh,bess_kw,flex_kwh,flex_kw,x,y,vans,van_kwh,charger_kw,gtv_kw
+L1,Distribution centre,logistics,sells,Transportweg,1600000,900,0,0,0,0,300,180,0,0.0,0.0,400.0
+O1,Office building,office,sells,Zernikeweg,500000,250,0,0,0,0,470,150,0,0.0,0.0,190.0
+C1,Cold store,cold_storage,needs,Koelhuisweg,2200000,300,0,0,500,150,640,230,0,0.0,0.0,320.0
+D1,Data centre,data_center,needs,Zernikeweg,1300000,0,0,0,0,0,560,360,0,0.0,0.0,200.0
+F1,Factory with battery,factory_2shift,stores,Industrieweg,2500000,400,1000,500,0,0,760,420,0,0.0,0.0,580.0
+E1,EV fleet depot,ev_depot,needs,Transportweg,50000,100,0,0,0,0,230,380,25,45.0,11.0,260.0
+B1,Industrial bakery,bakery,needs,Industrieweg,900000,0,0,0,0,0,860,260,0,0.0,0.0,240.0
+W1,Wholesale,supermarket,sells,Koelhuisweg,600000,150,0,0,0,0,420,470,0,0.0,0.0,130.0

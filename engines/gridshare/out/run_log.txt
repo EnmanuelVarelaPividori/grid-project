@@ -1,0 +1,94 @@
+{
+ "limits": {
+  "group_imp": 1770.0,
+  "group_exp": 940.0,
+  "gtv": {
+   "L1": 400.0,
+   "O1": 190.0,
+   "C1": 320.0,
+   "D1": 200.0,
+   "F1": 580.0,
+   "E1": 260.0,
+   "B1": 240.0,
+   "W1": 130.0
+  }
+ },
+ "pass": {
+  "expansion_kw_absorbed_training_weeks": {
+   "no_coordination": 0,
+   "rule_based": 150,
+   "gridshare_v0": 250
+  },
+  "gridshare_absorbs_most_expansion": true,
+  "zero_group_violations_with_expansion_held_out": true,
+  "every_business_better_off_after_fees_flat_saas": false,
+  "every_business_better_off_after_fees_tiered_saas": true
+ },
+ "B_violations": {
+  "best_solo": 380,
+  "no_coordination": 380,
+  "rule_based": 53,
+  "gridshare_v0": 0
+ },
+ "A_peaks": {
+  "best_solo": [
+   1741.0,
+   886.0
+  ],
+  "no_coordination": [
+   1741.0,
+   886.0
+  ],
+  "rule_based": [
+   1593.0,
+   828.0
+  ],
+  "gridshare_v0": [
+   1680.0,
+   886.0
+  ]
+ },
+ "case_gs": {
+  "net_gain_eur": {
+   "L1": 11036.0,
+   "O1": 1098.0,
+   "C1": 3894.0,
+   "D1": 4114.0,
+   "F1": 1555.0,
+   "E1": 2605.0,
+   "B1": 990.0,
+   "W1": -801.0
+  },
+  "avoided_capacity_increase_eur": 1549.0,
+  "kwh_exchanged": 275927.0,
+  "businesses_better_off": 7,
+  "businesses_worse_off": 1,
+  "platform_revenue_eur": {
+   "saas": 15845.0,
+   "gain_share": 232.0,
+   "exchange_margin": 2759.0,
+   "gopacs": 0.0
+  }
+ },
+ "case_nc": {
+  "L1": 13710.0,
+  "O1": 3062.0,
+  "C1": 6152.0,
+  "D1": 6296.0,
+  "F1": 4958.0,
+  "E1": 4789.0,
+  "B1": 2947.0,
+  "W1": 1029.0
+ },
+ "tiered": {
+  "L1": 11036.0,
+  "O1": 2271.0,
+  "C1": 3894.0,
+  "D1": 5288.0,
+  "F1": 1555.0,
+  "E1": 2605.0,
+  "B1": 2164.0,
+  "W1": 373.0
+ }
+}
+done in 79s

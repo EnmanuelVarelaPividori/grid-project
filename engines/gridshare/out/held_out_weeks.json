@@ -1,0 +1,54 @@
+{
+  "locked": true,
+  "note": "Chosen before any model work. Do not train or tune on these weeks.",
+  "weeks": [
+    {
+      "label": "coldest_dark_week",
+      "start_utc": "2025-01-13 00:00:00+00:00"
+    },
+    {
+      "label": "spread_1",
+      "start_utc": "2025-01-20 00:00:00+00:00"
+    },
+    {
+      "label": "spread_2",
+      "start_utc": "2025-02-17 00:00:00+00:00"
+    },
+    {
+      "label": "spread_3",
+      "start_utc": "2025-03-17 00:00:00+00:00"
+    },
+    {
+      "label": "spread_4",
+      "start_utc": "2025-04-14 00:00:00+00:00"
+    },
+    {
+      "label": "spread_5",
+      "start_utc": "2025-05-12 00:00:00+00:00"
+    },
+    {
+      "label": "sunny_spring_week",
+      "start_utc": "2025-05-26 00:00:00+00:00"
+    },
+    {
+      "label": "spread_6",
+      "start_utc": "2025-06-09 00:00:00+00:00"
+    },
+    {
+      "label": "spread_7",
+      "start_utc": "2025-07-07 00:00:00+00:00"
+    },
+    {
+      "label": "summer_holiday_week",
+      "start_utc": "2025-07-28 00:00:00+00:00"
+    },
+    {
+      "label": "spread_8",
+      "start_utc": "2025-08-04 00:00:00+00:00"
+    },
+    {
+      "label": "heat_wave_week",
+      "start_utc": "2025-08-18 00:00:00+00:00"
+    }
+  ]
+}

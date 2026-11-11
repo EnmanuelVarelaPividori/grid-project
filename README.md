@@ -24,3 +24,7 @@ There is one root workspace lockfile. Install landing dependencies with `pnpm --
 The landing's visual style, interactive behaviour, data sources and simulation assumptions are documented in [apps/landing/GRIDSHARE.md](apps/landing/GRIDSHARE.md). Signup forms and energy trades remain demonstrations.
 
 CI runs checks, tests and a build. There is no Docker configuration or deployment pipeline. `apps/web` intentionally has no app, dependencies or dev server.
+
+## Simulation engine
+
+The Python energy hub simulation, documentation and sample outputs are in [engines/gridshare](engines/gridshare/README.md). Run its commands from that directory.
