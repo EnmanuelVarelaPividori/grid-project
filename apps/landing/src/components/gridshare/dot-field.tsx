@@ -1,14 +1,16 @@
 import {useEffect, useRef} from "react";
 import {Brand} from "./icons";
 
-// A dot-matrix shader: an organic, slowly morphing energy shape drawn as a grid of round "LED" dots.
-// It first plays as a dark loading screen, then fades to white and settles in as the hero background.
+// A dot-matrix shader drawn as a grid of round "LED" dots. It first plays as a dark loading screen: a lightning
+// bolt charges up from bottom to top. Then the page fades to white and the bolt grows, turns light green and keeps
+// spinning slowly behind the hero.
 //
 // The phase lives on <html data-intro="play|reveal|done|skip">. An inline script in the document head
 // (introScript, below) picks "play" or "skip" before first paint, so returning visitors never see a flash.
+// Adding ?intro to the URL always replays it.
 
 export const introStorageKey = "gs-intro-seen";
-export const introScript = `(function(){var d=document.documentElement,s="play";try{if(sessionStorage.getItem("${introStorageKey}"))s="skip"}catch(e){}if(location.hash||matchMedia("(prefers-reduced-motion: reduce)").matches)s="skip";d.dataset.intro=s})()`;
+export const introScript = `(function(){var d=document.documentElement,s="play";try{if(sessionStorage.getItem("${introStorageKey}"))s="skip"}catch(e){}if(location.hash||matchMedia("(prefers-reduced-motion: reduce)").matches)s="skip";if(/[?&]intro(=|&|$)/.test(location.search))s="play";d.dataset.intro=s})()`;
 
 const vertexShader = `
 attribute vec2 aPosition;
@@ -20,8 +22,10 @@ precision highp float;
 uniform vec2 uResolution;
 uniform float uTime;
 uniform float uDark;   // 1 = loading screen on dark ground, 0 = light hero background
-uniform float uSize;   // radius of the energy shape
 uniform float uCell;   // dot pitch in device pixels
+uniform float uBolt;   // bolt height as a share of the screen height
+uniform float uCharge; // how far the bolt has charged, from bottom (0) to top (1)
+uniform float uSpin;   // rotation of the bolt around its vertical axis, in radians
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float noise(vec2 p) {
@@ -40,14 +44,49 @@ float fbm(vec2 p) {
 	}
 	return value;
 }
-// Brightness of the energy shape at a point: a domain-warped noise blob that drifts and breathes.
-float field(vec2 uv) {
-	float t = uTime;
-	vec2 warp = vec2(fbm(uv * 1.5 + vec2(0.0, t * 0.11)), fbm(uv * 1.5 + vec2(5.2, -t * 0.09)));
-	float n = fbm(uv * 1.3 + 1.9 * warp + vec2(t * 0.04, -t * 0.03));
-	float r = length(uv * vec2(0.9, 1.2));
-	float shape = smoothstep(uSize, uSize * 0.15, r + (n - 0.5) * 1.3);
-	return clamp(shape * (0.55 + 1.35 * n), 0.0, 1.0);
+// One edge of the polygon distance below (Inigo Quilez's sdPolygon, unrolled for WebGL 1).
+void polygonEdge(vec2 p, vec2 a, vec2 b, inout float d, inout float s) {
+	vec2 e = b - a;
+	vec2 w = p - a;
+	vec2 q = w - e * clamp(dot(w, e) / dot(e, e), 0.0, 1.0);
+	d = min(d, dot(q, q));
+	bvec3 c = bvec3(p.y >= a.y, p.y < b.y, e.x * w.y > e.y * w.x);
+	if (all(c) || all(not(c))) s = -s;
+}
+// Signed distance to a lightning bolt one unit tall, centred on the origin; negative inside.
+float sdBolt(vec2 p) {
+	vec2 v0 = vec2(0.03, 0.5);
+	vec2 v1 = vec2(-0.21, -0.02);
+	vec2 v2 = vec2(-0.03, -0.02);
+	vec2 v3 = vec2(-0.13, -0.5);
+	vec2 v4 = vec2(0.23, 0.06);
+	vec2 v5 = vec2(0.05, 0.06);
+	vec2 v6 = vec2(0.21, 0.5);
+	float d = dot(p - v0, p - v0);
+	float s = 1.0;
+	polygonEdge(p, v0, v6, d, s);
+	polygonEdge(p, v1, v0, d, s);
+	polygonEdge(p, v2, v1, d, s);
+	polygonEdge(p, v3, v2, d, s);
+	polygonEdge(p, v4, v3, d, s);
+	polygonEdge(p, v5, v4, d, s);
+	polygonEdge(p, v6, v5, d, s);
+	return s * sqrt(d);
+}
+// The bolt: dim dots where it is still empty, bright crackling dots where it has charged, and a soft glow.
+// Spinning around the vertical axis squeezes it like a turning coin; the back face shows mirrored.
+float bolt(vec2 uv) {
+	float turn = cos(uSpin);
+	vec2 p = uv / uBolt;
+	p.x /= sign(turn) * max(abs(turn), 0.06);
+	float n = fbm(p * 3.0 + vec2(uTime * 0.7, -uTime * 0.5));
+	float d = sdBolt(p) + (n - 0.5) * 0.05;
+	float inside = 1.0 - smoothstep(-0.01, 0.015, d);
+	float fillLine = mix(-0.56, 0.56, uCharge);
+	float charged = 1.0 - smoothstep(fillLine - 0.03, fillLine + 0.03, p.y);
+	float core = inside * mix(0.36, 0.8 + 0.4 * n, charged) * (0.65 + 0.35 * abs(turn));
+	float halo = exp(-max(d, 0.0) * 16.0) * (0.12 + 0.25 * uCharge);
+	return clamp(core + halo * (1.0 - inside), 0.0, 1.0);
 }
 
 void main() {
@@ -56,14 +95,14 @@ void main() {
 	vec2 centre = (cellId + 0.5) * uCell;
 
 	// Scanline glitch: now and then a row slips sideways.
-	float glitch = step(0.985, hash(vec2(cellId.y, floor(uTime * 7.0)))) * (hash(vec2(cellId.y, 3.0)) - 0.5) * 0.08;
-	vec2 uv = (centre - 0.5 * uResolution) / uResolution.y + vec2(glitch, -0.07 * uDark);
+	float glitch = step(0.985, hash(vec2(cellId.y, floor(uTime * 7.0)))) * (hash(vec2(cellId.y, 3.0)) - 0.5) * 0.04;
+	vec2 uv = (centre - 0.5 * uResolution) / uResolution.y + vec2(glitch, -0.05 * uDark);
 
 	// Slightly offset samples per channel give the RGB fringe of an LED panel.
-	float fringe = 0.012 + 0.01 * uDark;
-	float g = field(uv);
-	float r = field(uv + vec2(fringe, 0.0));
-	float b = field(uv - vec2(fringe, 0.0));
+	float fringe = 0.004 + 0.002 * uDark;
+	float g = bolt(uv);
+	float r = bolt(uv + vec2(fringe, 0.0));
+	float b = bolt(uv - vec2(fringe, 0.0));
 	float flicker = 0.9 + 0.1 * sin(cellId.y * 0.8 + uTime * 5.0);
 	float level = max(g, max(r, b)) * flicker;
 
@@ -78,11 +117,9 @@ void main() {
 	vec3 lightColour = mix(vec3(0.29, 0.48, 0.21), vec3(0.42, 0.75, 0.29), level);
 	vec3 colour = mix(lightColour, darkColour, uDark);
 
-	// On the light page: keep the centre (headline) quieter and fade out towards the bottom of the hero.
-	vec2 screen = px / uResolution;
-	float centreQuiet = mix(0.35, 1.0, smoothstep(0.12, 0.62, length((screen - vec2(0.5, 0.55)) * vec2(1.6, 1.0))));
-	float bottomFade = smoothstep(0.0, 0.45, screen.y);
-	float lightAlpha = (0.05 + 0.42 * level) * centreQuiet * bottomFade;
+	// On the light page: soft enough to read the headline over, fading out at the bottom of the hero.
+	float bottomFade = smoothstep(0.0, 0.22, px.y / uResolution.y);
+	float lightAlpha = (0.05 + 0.4 * level) * bottomFade;
 	float darkAlpha = 0.08 + 0.92 * level;
 	float alpha = dotMask * mix(lightAlpha, darkAlpha, uDark);
 
@@ -95,10 +132,15 @@ const easeOut = (t: number) => 1 - (1 - t) ** 3;
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t));
 
-// Timeline, in seconds: the shape grows while "loading", then the page is revealed.
-const loadEnd = 2.0;
-const revealEnd = 3.1;
-const settledSize = 1.05;
+// Timeline, in seconds: the bolt pops in and charges while "loading", holds for a beat, then the page is revealed
+// while the bolt grows and starts to spin.
+const popEnd = 0.35;
+const chargeEnd = 2.0;
+const revealStart = 2.25;
+const revealEnd = 3.35;
+const boltHeight = 0.32;
+const settledHeight = 0.6;
+const spinSpeed = 0.9; // radians a second: one turn about every 7 s
 
 function compile(gl: WebGLRenderingContext, type: number, source: string) {
 	const shader = gl.createShader(type);
@@ -131,8 +173,10 @@ function setup(canvas: HTMLCanvasElement) {
 		resolution: uniform("uResolution"),
 		time: uniform("uTime"),
 		dark: uniform("uDark"),
-		size: uniform("uSize"),
 		cell: uniform("uCell"),
+		bolt: uniform("uBolt"),
+		charge: uniform("uCharge"),
+		spin: uniform("uSpin"),
 	};
 }
 
@@ -151,8 +195,9 @@ export function DotField() {
 			finish();
 			return;
 		}
-		const playing = root.dataset.intro === "play" && window.scrollY === 0;
+		const playing = root.dataset.intro === "play";
 		if (playing) {
+			window.scrollTo(0, 0);
 			try {
 				sessionStorage.setItem(introStorageKey, "1");
 			} catch {
@@ -165,7 +210,8 @@ export function DotField() {
 		let visible = true;
 		let width = 0;
 		let height = 0;
-		const start = performance.now();
+		// The timeline starts at the first frame actually drawn, so a page opened in a background tab still plays it.
+		let start = 0;
 
 		const resize = () => {
 			const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -181,20 +227,26 @@ export function DotField() {
 		};
 
 		const draw = (now: number) => {
+			if (!start) start = now;
 			const elapsed = (now - start) / 1000;
 			let dark = 0;
-			let size = settledSize;
+			let bolt = settledHeight;
+			let charge = 1;
+			let spin = reducedMotion ? 0 : elapsed * spinSpeed;
+			if (playing) spin = Math.max(0, elapsed - revealStart) * spinSpeed;
 			if (playing && elapsed < revealEnd) {
-				const load = easeOut(clamp01(elapsed / loadEnd));
-				const reveal = easeInOut(clamp01((elapsed - loadEnd) / (revealEnd - loadEnd)));
+				charge = easeInOut(clamp01(elapsed / chargeEnd));
+				const reveal = easeInOut(clamp01((elapsed - revealStart) / (revealEnd - revealStart)));
 				dark = 1 - reveal;
-				size = 0.04 + 0.21 * load + (settledSize - 0.25) * reveal;
-				if (progressRef.current) progressRef.current.textContent = `${Math.round(load * 100)}%`;
-				if (elapsed >= loadEnd && root.dataset.intro === "play") root.dataset.intro = "reveal";
+				bolt = (boltHeight + (settledHeight - boltHeight) * reveal) * easeOut(clamp01(elapsed / popEnd));
+				if (progressRef.current) progressRef.current.textContent = `${Math.round(charge * 100)}%`;
+				if (elapsed >= revealStart && root.dataset.intro === "play") root.dataset.intro = "reveal";
 			} else if (root.dataset.intro === "reveal") finish();
 			gl.uniform1f(context.time, reducedMotion ? 4 : elapsed + 4);
 			gl.uniform1f(context.dark, dark);
-			gl.uniform1f(context.size, size);
+			gl.uniform1f(context.bolt, bolt);
+			gl.uniform1f(context.charge, charge);
+			gl.uniform1f(context.spin, spin);
 			gl.drawArrays(gl.TRIANGLES, 0, 3);
 		};
 
