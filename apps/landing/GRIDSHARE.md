@@ -17,14 +17,15 @@ The development panels are opt-in with `VITE_DEVTOOLS=true`. The default preview
 
 ## Interactive behaviour
 
-- **Autopilot (01):** Household/Business switches the found devices, guarantees and yesterday's simulated actions. Yearly use and price drive the 12-month savings prediction (steering + sharing, with a monthly bar chart). A supplier without energy sharing (Vast & Groen) blocks the local-share actions and leaves sharing out of the prediction, shown as an outline.
+- **Autopilot (01):** Household/Business switches the found devices, guarantees and yesterday's simulated actions. Yearly use and price drive the 12-month savings prediction. The supplier list names real Dutch suppliers for illustration only (GridShare is not affiliated with them). None offers energy sharing to consumers yet, so the prediction counts steering only, shows sharing as a dashed outline, and the day feed lists sharing with neighbours as a "Soon" potential.
 - **Flat grid (02):** one Oosterpoort street (40 homes + 4 businesses) with and without Autopilot. Both scenarios use the same daily energy (1,517 kWh), only moved in time; the line morphs between them.
 - **Energy map (03):** drag to pan, zoom 0.8–1.8×, recenter, asset filters, grid-capacity zones and a detail card for the selected listing, including whether it is in your grid area.
+- **Shader intro:** on the first visit in a browser session, a WebGL dot-matrix shader plays as a ~2 s loading screen, then fades to white and stays as a faint, slowly moving dot field behind the hero (`src/components/gridshare/dot-field.tsx`). An inline head script skips it before first paint for returning visitors, links to a section (`#map`, …) and reduced motion; without WebGL the hero shows plain. Rendering pauses when the hero is off screen or the tab is hidden.
 - Pilot and supplier dialogs validate their inputs and show an in-page preview. They do not submit registrations or send messages. Form details are held only while the dialog remains open.
 
 ## Data and assumptions
 
-`src/lib/autopilot.ts` contains the pure, deterministic model: customer profiles and actions, the savings prediction, the day feed and the street-load scenarios. Its tests cover the default household (€423 a year at 6,000 kWh and €0.30/kWh), suppliers without sharing, business savings, invalid input, and energy conservation and the street limit in the flat-grid chart. It is not a live forecasting, trading, billing or equipment-control system.
+`src/lib/autopilot.ts` contains the pure, deterministic model: customer profiles and actions, the savings prediction, the day feed and the street-load scenarios. Its tests cover the default household (€423 a year with sharing, €315 without), the business example (€750 a year, +€3.02 yesterday, €0.84 sharing potential), business savings, invalid input, and energy conservation and the street limit in the flat-grid chart. It is not a live forecasting, trading, billing or equipment-control system.
 
 The prediction is a simplified rule set: homes save 35% of use × price × 0.5 from steering plus a fixed €108 from selling solar; businesses save 25% × price × 0.4 from steering plus 5% of use bought locally below their price (local solar at €0.16/kWh). Monthly weights spread steering across winter and sharing across summer. These are stated assumptions, not outputs of the weather or price APIs.
 

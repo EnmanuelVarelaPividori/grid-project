@@ -4,7 +4,18 @@
 export type CustomerType = "home" | "biz";
 export type Asset = "solar" | "battery" | "ev" | "flex" | "business";
 export type ActionKind = Asset | "share";
-export type SupplierId = "noord" | "polder" | "vast";
+export type SupplierId =
+	| "vattenfall"
+	| "eneco"
+	| "essent"
+	| "greenchoice"
+	| "vandebron"
+	| "budget"
+	| "zonneplan"
+	| "frank"
+	| "tibber"
+	| "pure"
+	| "other";
 
 export const iconPaths: Record<ActionKind, string> = {
 	solar:
@@ -16,10 +27,20 @@ export const iconPaths: Record<ActionKind, string> = {
 	share: "M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3",
 };
 
-export const suppliers: Record<SupplierId, {name: string; sharing: boolean}> = {
-	noord: {name: "Noordstroom", sharing: true},
-	polder: {name: "Polder Energie", sharing: true},
-	vast: {name: "Vast & Groen", sharing: false},
+// Dutch suppliers, listed for illustration only; GridShare is not affiliated with them. None offers energy
+// sharing to consumers yet, so steering works with every supplier and neighbour sharing is shown as a potential.
+export const suppliers: Record<SupplierId, string> = {
+	vattenfall: "Vattenfall",
+	eneco: "Eneco",
+	essent: "Essent",
+	greenchoice: "Greenchoice",
+	vandebron: "Vandebron",
+	budget: "Budget Energie",
+	zonneplan: "Zonneplan",
+	frank: "Frank Energie",
+	tibber: "Tibber",
+	pure: "Pure Energie",
+	other: "Another supplier",
 };
 
 export interface AutopilotAction {
@@ -31,7 +52,7 @@ export interface AutopilotAction {
 	tag: string;
 	/** kWh exchanged with a neighbour; only set for local shares. */
 	kwh?: number;
-	/** Needs a supplier that supports energy sharing. */
+	/** Sharing with neighbours: not available until Dutch suppliers offer energy sharing. */
 	share?: boolean;
 }
 
@@ -58,9 +79,8 @@ export const profiles: Record<CustomerType, Profile> = {
 		assetsLabel: "We found these at your address",
 		promises: [
 			"Never worse off than your own contract",
-			"Your car is charged when you leave",
-			"Your home stays between 19 and 21 °C",
-			"Your battery never drops below 20%",
+			"Car charged when you leave",
+			"Home stays 19–21 °C",
 			"One tap to take back control",
 		],
 		peak: 85,
@@ -142,9 +162,8 @@ export const profiles: Record<CustomerType, Profile> = {
 		assetsLabel: "We found these at your business",
 		promises: [
 			"Never worse off than your own contract",
-			"Food-safety temperatures are never crossed",
-			"Bread is ready when the shop opens",
-			"Your van is charged for the first route",
+			"Food-safe temperatures, always",
+			"Bread ready when you open",
 			"One tap to take back control",
 		],
 		peak: 40,
@@ -200,30 +219,16 @@ export const profiles: Record<CustomerType, Profile> = {
 	},
 };
 
-export interface FeedItem extends AutopilotAction {
-	blocked: boolean;
-}
-
-/** Yesterday's simulated actions. Local shares are blocked when the supplier does not support sharing. */
-export function dayFeed(type: CustomerType, supplier: SupplierId) {
-	const {sharing, name} = suppliers[supplier];
-	let money = 0;
-	let shared = 0;
-	const items: FeedItem[] = profiles[type].actions.map((action) => {
-		const blocked = Boolean(action.share) && !sharing;
-		if (blocked)
-			return {
-				...action,
-				blocked,
-				save: 0,
-				detail: `Not possible yet: ${name} doesn’t support energy sharing`,
-				tag: "Needs sharing",
-			};
-		money += action.save;
-		if (action.share) shared += action.kwh ?? 0;
-		return {...action, blocked};
-	});
-	return {items, money, shared};
+/**
+ * Yesterday's simulated actions. Sharing with neighbours is not possible yet, so those actions are left out of
+ * the day's savings and summed into one potential instead.
+ */
+export function dayFeed(type: CustomerType) {
+	const actions = profiles[type].actions;
+	const items = actions.filter((action) => !action.share);
+	const money = items.reduce((total, action) => total + action.save, 0);
+	const potential = actions.filter((action) => action.share).reduce((total, action) => total + action.save, 0);
+	return {items, money, potential};
 }
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

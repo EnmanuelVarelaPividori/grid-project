@@ -40,10 +40,10 @@ export function Brand({small = false}: {small?: boolean}) {
 		<span className={small ? "gs-brand gs-brand-small" : "gs-brand"}>
 			{!small && (
 				<svg aria-hidden="true" height="24" viewBox="0 0 24 24" width="24">
-					<rect fill="#536C44" height="9" rx="2" width="9" x="2" y="2" />
-					<rect fill="#536C44" height="9" opacity=".55" rx="2" width="9" x="13" y="2" />
-					<rect fill="#536C44" height="9" opacity=".55" rx="2" width="9" x="2" y="13" />
-					<rect fill="#536C44" height="9" rx="2" width="9" x="13" y="13" />
+					<rect fill="#4A7A35" height="9" rx="2" width="9" x="2" y="2" />
+					<rect fill="#4A7A35" height="9" opacity=".55" rx="2" width="9" x="13" y="2" />
+					<rect fill="#4A7A35" height="9" opacity=".55" rx="2" width="9" x="2" y="13" />
+					<rect fill="#4A7A35" height="9" rx="2" width="9" x="13" y="13" />
 				</svg>
 			)}
 			<span className="gs-display">
