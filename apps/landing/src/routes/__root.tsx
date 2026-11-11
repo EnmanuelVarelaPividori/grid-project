@@ -18,11 +18,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 		meta: [
 			{charSet: "utf-8"},
 			{content: "width=device-width, initial-scale=1", name: "viewport"},
-			{title: "GridShare · Set your limits. Your energy trades itself."},
+			{title: "GridShare Autopilot · Turn it on once. We run your energy."},
 			{
 				name: "description",
 				content:
-					"Explore local energy sharing in Groningen. Set your limits, meet your neighbours, and preview solar and battery trades with GridShare autopilot.",
+					"GridShare Autopilot manages your solar, battery, EV and heat pump together with your neighbours in Groningen: cheaper for you, calmer for the grid.",
 			},
 		],
 	}),

@@ -1,6 +1,6 @@
 # GridShare landing page
 
-Implements the supplied GridShare / Autopilot visual reference using the existing **HeroUI v3** installation. The page uses HeroUI Button, Link, Card, Tabs, Slider, Switch, Modal, TextField, Input and Label components, with the reference's warm off-white, olive and sage palette. The neighbourhood map is an original, illustrative SVG; no map provider or tile key is required.
+Implements the supplied **GridShare landing page · Autopilot** design: Autopilot is on from day one and manages devices for the whole street, instead of the customer setting trading limits. The page uses the design's DM Sans / Manrope type and warm off-white, olive and sage palette. HeroUI v3 provides the Button, Modal, TextField, Input and Label components; segmented controls, the supplier select and the map controls are plain elements styled in `src/styles/globals.css`. The neighbourhood map is an original, illustrative SVG; no map provider or tile key is required.
 
 Source paths below are relative to `apps/landing`; run the commands from the repository root. The workspace has one root lockfile.
 
@@ -17,18 +17,16 @@ The development panels are opt-in with `VITE_DEVTOOLS=true`. The default preview
 
 ## Interactive behaviour
 
-- Selling/buying, price bounds, energy budget, battery reserve, trading hours, household/business partners and supplier support change the trade preview.
-- Compatible preferred neighbours are prioritized while respecting the hard constraints.
-- The default selling example reproduces 5 deals, 10.0 kWh and €1.54 extra compared with the fictional €0.06/kWh feed-in tariff.
-- The map supports asset filters, zoom, grid-area visibility, neighbour selection and preferences.
-- The feeder comparison is a normalized illustration. It conserves shifted load, with a maximum 15% illustrative peak reduction. It is not calculated from live feeder telemetry or guaranteed savings.
+- **Autopilot (01):** Household/Business switches the found devices, guarantees and yesterday's simulated actions. Yearly use and price drive the 12-month savings prediction (steering + sharing, with a monthly bar chart). A supplier without energy sharing (Vast & Groen) blocks the local-share actions and leaves sharing out of the prediction, shown as an outline.
+- **Flat grid (02):** one Oosterpoort street (40 homes + 4 businesses) with and without Autopilot. Both scenarios use the same daily energy (1,517 kWh), only moved in time; the line morphs between them.
+- **Energy map (03):** drag to pan, zoom 0.8–1.8×, recenter, asset filters, grid-capacity zones and a detail card for the selected listing, including whether it is in your grid area.
 - Pilot and supplier dialogs validate their inputs and show an in-page preview. They do not submit registrations or send messages. Form details are held only while the dialog remains open.
 
 ## Data and assumptions
 
-`src/lib/autopilot.ts` contains the pure, deterministic rule-based allocator. Its tests cover the default example, price/time/area constraints, battery reserve, daily limits, partner filtering, supplier eligibility and load conservation. It is not a live trading, billing or equipment-control system.
+`src/lib/autopilot.ts` contains the pure, deterministic model: customer profiles and actions, the savings prediction, the day feed and the street-load scenarios. Its tests cover the default household (€423 a year at 6,000 kWh and €0.30/kWh), suppliers without sharing, business savings, invalid input, and energy conservation and the street limit in the flat-grid chart. It is not a live forecasting, trading, billing or equipment-control system.
 
-The simulation assumes 6 kWh of daytime surplus/direct-use budget and a full 10 kWh battery before the evening, protected by the selected reserve. These are stated scenario assumptions, not outputs of the weather API. Buy-mode comparison uses a fictional €0.30/kWh import tariff.
+The prediction is a simplified rule set: homes save 35% of use × price × 0.5 from steering plus a fixed €108 from selling solar; businesses save 25% × price × 0.4 from steering plus 5% of use bought locally below their price (local solar at €0.16/kWh). Monthly weights spread steering across winter and sharing across summer. These are stated assumptions, not outputs of the weather or price APIs.
 
 `src/lib/energy-data.ts` queries Open-Meteo and PDOK in the browser with cancellation, timeouts, schema validation and a bundled fallback. Real market context is kept separate from fictional neighbour offers. Source badges distinguish live responses, recorded fallbacks, estimated concepts and simulated values. The snapshot's actual date is shown, including when live refresh is unavailable.
 

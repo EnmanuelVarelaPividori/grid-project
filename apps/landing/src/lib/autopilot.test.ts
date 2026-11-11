@@ -1,48 +1,71 @@
 import {describe, expect, it} from "vite-plus/test";
-import {baselineLoad, feederProfile, initialPreferences, planTrades} from "./autopilot";
+import {dayFeed, energyMoved, predictSavings, streetLimitKw, streetLoad, streetStats} from "./autopilot";
 
-const none = new Set<string>();
-describe("illustrative autopilot", () => {
-	it("reproduces the reference example with five deals, 10 kWh and €1.54 extra", () => {
-		const result = planTrades(initialPreferences, none);
-		expect(result.accepted).toHaveLength(5);
-		expect(result.energy).toBeCloseTo(10);
-		expect(result.extra).toBeCloseTo(1.54);
-		expect(result.surplus).toBeCloseTo(1);
-		expect(result.decisions.find((item) => item.neighbour.id === "sports")?.quantity).toBe(1);
+describe("savings prediction", () => {
+	it("predicts €423 a year for the default household with a sharing supplier", () => {
+		const result = predictSavings("home", true, 6000, 0.3);
+		expect(result.steer).toBe(315);
+		expect(result.share).toBe(108);
+		expect(result.total).toBe(423);
+		expect(result.low).toBe(340);
+		expect(result.high).toBe(510);
+		expect(result.bill).toBeCloseTo(1800);
+		expect(result.percentOfBill).toBe(24);
 	});
-	it("enforces the price, hours and grid-area constraints even for preferred neighbours", () => {
-		const result = planTrades(
-			{...initialPreferences, price: 0.22, hours: "daytime"},
-			new Set(["zernike", "balcony", "herestraat"]),
-		);
-		for (const item of result.accepted) {
-			expect(item.neighbour.sameGrid).toBe(true);
-			expect(item.neighbour.price).toBeGreaterThanOrEqual(0.22);
-			expect(Number(item.neighbour.time.split(":")[0])).toBeLessThan(16);
+	it("leaves sharing out of the total, and shows it as a ghost, when the supplier cannot share", () => {
+		const result = predictSavings("home", false, 6000, 0.3);
+		expect(result.total).toBe(315);
+		expect(result.bars.every((bar) => bar.share === 0)).toBe(true);
+		expect(result.bars.some((bar) => bar.ghost > 0)).toBe(true);
+	});
+	it("models businesses buying local solar below their own price", () => {
+		const result = predictSavings("biz", true, 30000, 0.25);
+		expect(result.steer).toBe(750);
+		expect(result.share).toBe(135);
+		expect(predictSavings("biz", true, 30000, 0.15).share).toBe(0);
+	});
+	it("handles empty or invalid input without negative or NaN values", () => {
+		for (const result of [predictSavings("home", true, 0, 0.3), predictSavings("biz", true, Number.NaN, -1)]) {
+			expect(result.total).toBe(0);
+			expect(result.percentOfBill).toBe(0);
+			expect(result.bars.every((bar) => bar.steer === 0 && bar.share === 0)).toBe(true);
 		}
-		expect(result.accepted).toHaveLength(0);
 	});
-	it("never exceeds the daily limit or available battery above reserve", () => {
-		const result = planTrades({...initialPreferences, dailyLimit: 4, reserve: 90, hours: "all"}, none);
-		expect(result.energy).toBeLessThanOrEqual(4);
-		expect(
-			result.accepted.filter((item) => item.neighbour.battery).reduce((sum, item) => sum + item.quantity, 0),
-		).toBeLessThanOrEqual(1 + 1e-9);
+	it("scales the tallest month to the full chart height", () => {
+		const {bars} = predictSavings("home", true, 6000, 0.3);
+		expect(Math.max(...bars.map((bar) => bar.steer + bar.share))).toBeCloseTo(1);
 	});
-	it("honours peer selection and supplier support", () => {
-		expect(planTrades({...initialPreferences, households: false, businesses: false}, none).energy).toBe(0);
-		expect(planTrades({...initialPreferences, supplier: "vast"}, none).energy).toBe(0);
+});
+
+describe("Autopilot day feed", () => {
+	it("adds up yesterday's savings and shared energy", () => {
+		const feed = dayFeed("home", "noord");
+		expect(feed.money).toBeCloseTo(2.88);
+		expect(feed.shared).toBeCloseTo(6.5);
+		expect(feed.items.some((item) => item.blocked)).toBe(false);
 	});
-	it("buys only at or below the chosen maximum and prioritizes lower prices", () => {
-		const result = planTrades({...initialPreferences, mode: "buy", price: 0.15}, none);
-		expect(result.accepted.length).toBeGreaterThan(0);
-		for (const item of result.accepted) expect(item.neighbour.price).toBeLessThanOrEqual(0.15);
+	it("blocks local shares when the supplier does not support sharing", () => {
+		const feed = dayFeed("home", "vast");
+		expect(feed.shared).toBe(0);
+		expect(feed.money).toBeCloseTo(1.92);
+		const blocked = feed.items.filter((item) => item.blocked);
+		expect(blocked).toHaveLength(3);
+		for (const item of blocked) expect(item.save).toBe(0);
 	});
-	it("keeps shifted load conserved and reduces the illustrative peak by 15% at 10 kWh", () => {
-		const profile = feederProfile(10);
-		expect(Math.max(...profile.values)).toBeCloseTo(96 * 0.85);
-		expect(profile.values.reduce((a, b) => a + b, 0)).toBeCloseTo(baselineLoad.reduce((a, b) => a + b, 0));
-		expect(feederProfile(0).values).toEqual(baselineLoad);
+});
+
+describe("street load", () => {
+	const before = streetStats(streetLoad.before.homes, streetLoad.before.businesses);
+	const after = streetStats(streetLoad.after.homes, streetLoad.after.businesses);
+	it("keeps the same daily energy, only moved in time", () => {
+		expect(after.energy).toBe(before.energy);
+		expect(energyMoved()).toBeGreaterThan(0);
+	});
+	it("goes over the street limit without coordination and stays under it with Autopilot", () => {
+		expect(before.peak).toBeGreaterThan(streetLimitKw);
+		expect(before.hoursOver).toBeGreaterThan(0);
+		expect(after.peak).toBeLessThanOrEqual(streetLimitKw);
+		expect(after.hoursOver).toBe(0);
+		expect(after.ratio).toBeLessThan(before.ratio);
 	});
 });
