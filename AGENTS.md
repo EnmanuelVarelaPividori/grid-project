@@ -91,9 +91,9 @@ release. Add a tool name to select part of the graph. For example, run
 
 ## Monorepo commands and directories
 
-- `apps/landing` owns the GridShare landing; `apps/web` owns the dashboard prototype/application. Each has its own `src`, public assets, Vite build config and TypeScript config. Lint/format rules are centralized in the root Vite config, as required by Vite+ monorepo support.
-- Use the single root pnpm workspace and lockfile; never create nested lockfiles or install separate package managers per app.
-- From the root use `pnpm exec vp run check`, `pnpm exec vp run test` and `pnpm exec vp run build` (or `pnpm check/test/build`) for the **whole repository**. The built-in `vp check` validates the whole repository using centralized root formatting/lint settings. The built-in `vp test` alone validates the root runtime; the root test script also runs both apps. Application-local Vite+ commands validate that app.
-- Use `pnpm dev` for the landing on 5173, and `pnpm dev:web` for the dashboard on 5175.
-- Both development panels and the Vite debug plugin require `VITE_DEVTOOLS=true`.
-- Production defaults to `APP_NAME=landing`; the hiqual deployment still serves only the landing. Do not silently replace its public route with the dashboard.
+- `apps/landing` is the only implemented app: the GridShare landing page and interactive Autopilot demo. Preserve its design and behaviour.
+- `apps/web` is intentionally empty apart from `.gitkeep`, reserved for future application work. Do not restore the dashboard prototype or scaffold it without a user request.
+- Use the single root pnpm workspace and lockfile. Root Vite config centralizes lint/format settings; the landing's Vite config owns its build and framework plugins.
+- Run `pnpm dev` (port 5173), `pnpm check`, `pnpm test`, and `pnpm build` from the repository root. The root test config discovers the landing test project.
+- Debug panels and the Vite debug plugin are opt-in with `VITE_DEVTOOLS=true`.
+- There is no Docker, deployment runtime or deployment pipeline. CI only checks, tests and builds the landing. Do not reintroduce deployment work unless requested.

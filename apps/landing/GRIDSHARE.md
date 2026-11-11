@@ -2,12 +2,11 @@
 
 Implements the supplied GridShare / Autopilot visual reference using the existing **HeroUI v3** installation. The page uses HeroUI Button, Link, Card, Tabs, Slider, Switch, Modal, TextField, Input and Label components, with the reference's warm off-white, olive and sage palette. The neighbourhood map is an original, illustrative SVG; no map provider or tile key is required.
 
-Paths below are relative to `apps/landing`; the workspace lockfile lives at the repository root.
+Source paths below are relative to `apps/landing`; run the commands from the repository root. The workspace has one root lockfile.
 
 ## Run and verify
 
 ```sh
-cd ../..
 pnpm dev
 pnpm check
 pnpm test
@@ -46,4 +45,4 @@ Refresh the bundled, attributed records before a presentation:
 node apps/landing/scripts/refresh-data.mjs YYYY-MM-DD
 ```
 
-The API planning date follows the bundled snapshot date. Failed source refreshes preserve the previous snapshot. The root `server`, `deploy`, and `.github` directories supply the production runtime and hiqual pipeline for this monorepo.
+The API planning date follows the bundled snapshot date. Failed source refreshes preserve the previous snapshot. CI checks, tests and builds the landing only. No deployment configuration is included.

@@ -7,7 +7,6 @@ export default defineConfig({
 		sortImports: {newlinesBetween: false},
 		overrides: [
 			{files: ["apps/landing/**"], options: {sortTailwindcss: {stylesheet: "apps/landing/src/styles/globals.css"}}},
-			{files: ["apps/web/**"], options: {sortTailwindcss: {stylesheet: "apps/web/src/styles/globals.css"}}},
 		],
 		sortPackageJson: true,
 		useTabs: true,
@@ -72,6 +71,5 @@ export default defineConfig({
 		},
 	},
 	staged: {},
-	ssr: {noExternal: ["@gravity-ui/icons"]},
-	test: {include: ["server/**/*.test.ts"]},
+	test: {projects: ["apps/landing"]},
 });

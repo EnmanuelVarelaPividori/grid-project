@@ -11,6 +11,7 @@ export default defineConfig({
 			"@": path.resolve(import.meta.dirname, "./src"),
 		},
 	},
+	ssr: {noExternal: ["@gravity-ui/icons"]},
 	plugins: [
 		process.env.VITE_DEVTOOLS === "true" && devtools(),
 		tanstackStart(),

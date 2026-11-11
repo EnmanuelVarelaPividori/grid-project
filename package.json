@@ -6,12 +6,10 @@
 	"scripts": {
 		"dev": "pnpm --filter @gridshare/landing dev",
 		"dev:landing": "pnpm --filter @gridshare/landing dev",
-		"dev:web": "pnpm --filter @gridshare/web dev",
 		"build": "pnpm -r run build",
 		"check": "vp check",
-		"test": "vp test && pnpm -r run test",
-		"format": "vp fmt",
-		"start": "node server/start.mjs"
+		"test": "vp test",
+		"format": "vp fmt"
 	},
 	"devDependencies": {
 		"@types/node": "^26.6.6",
