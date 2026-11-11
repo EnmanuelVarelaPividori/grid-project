@@ -92,6 +92,7 @@ release. Add a tool name to select part of the graph. For example, run
 ## Monorepo commands and directories
 
 - `apps/landing` is the only implemented app: the GridShare landing page and interactive Autopilot demo. Preserve its design and behaviour.
+- `engines/` holds non-JS projects, such as the Python simulation in `engines/gridshare`, each with its own tooling. The root Vite+ format and lint checks skip `engines/**`; run an engine's own commands from its directory.
 - `apps/web` is intentionally empty apart from `.gitkeep`, reserved for future application work. Do not restore the dashboard prototype or scaffold it without a user request.
 - Use the single root pnpm workspace and lockfile. Root Vite config centralizes lint/format settings; the landing's Vite config owns its build and framework plugins.
 - Run `pnpm dev` (port 5173), `pnpm check`, `pnpm test`, and `pnpm build` from the repository root. The root test config discovers the landing test project.

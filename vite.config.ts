@@ -3,7 +3,15 @@ import {defineConfig} from "vite-plus";
 export default defineConfig({
 	defaultPackage: "./apps/landing",
 	fmt: {
-		ignorePatterns: ["**/dist/**", "**/node_modules/**", "**/routeTree.gen.ts", "skills/**", "pnpm-lock.yaml"],
+		// engines/ holds non-JS projects (the Python simulation) with their own tooling and generated outputs.
+		ignorePatterns: [
+			"**/dist/**",
+			"**/node_modules/**",
+			"**/routeTree.gen.ts",
+			"skills/**",
+			"engines/**",
+			"pnpm-lock.yaml",
+		],
 		sortImports: {newlinesBetween: false},
 		overrides: [
 			{files: ["apps/landing/**"], options: {sortTailwindcss: {stylesheet: "apps/landing/src/styles/globals.css"}}},
@@ -15,7 +23,7 @@ export default defineConfig({
 		bracketSpacing: false,
 	},
 	lint: {
-		ignorePatterns: ["**/dist/**", "**/node_modules/**", "**/routeTree.gen.ts", "skills/**"],
+		ignorePatterns: ["**/dist/**", "**/node_modules/**", "**/routeTree.gen.ts", "skills/**", "engines/**"],
 		categories: {correctness: "error", perf: "error"},
 		options: {typeAware: true, typeCheck: true},
 		plugins: ["react"],
