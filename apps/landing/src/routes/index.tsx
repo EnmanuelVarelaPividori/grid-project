@@ -1,0 +1,10 @@
+import {createFileRoute} from "@tanstack/react-router";
+import {LandingPage} from "@/components/gridshare/landing-page";
+
+export const Route = createFileRoute("/")({
+	component: IndexRoute,
+});
+
+function IndexRoute() {
+	return <LandingPage />;
+}
