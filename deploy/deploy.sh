@@ -23,7 +23,9 @@ cleanup() {
     if [[ $switched == true ]]; then
       printf '%s\n' "$old_include" > "$root/state/active-upstream.conf.next"
       mv "$root/state/active-upstream.conf.next" "$root/state/active-upstream.conf"
-      sudo -n /usr/sbin/nginx -t && sudo -n /usr/sbin/nginx -s reload || true
+      if sudo -n /usr/sbin/nginx -t; then
+        sudo -n /usr/sbin/nginx -s reload || echo 'Warning: nginx rollback reload failed.' >&2
+      fi
     fi
     docker rm -f "$name" >/dev/null 2>&1 || true
     echo 'Deployment failed. The previous active container has been preserved.' >&2
