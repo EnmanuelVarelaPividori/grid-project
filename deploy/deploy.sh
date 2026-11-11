@@ -47,9 +47,9 @@ docker run -d --name "$name" --restart unless-stopped \
   --env "APP_ORIGIN=$APP_ORIGIN" "$image" >/dev/null
 
 ready=false
-for attempt in $(seq 1 40); do
+for _ in $(seq 1 40); do
   if curl --fail --silent --max-time 3 "http://127.0.0.1:$port/healthz" | python3 -c 'import json,sys; assert json.load(sys.stdin)["revision"] == sys.argv[1]' "$revision" 2>/dev/null \
-    && curl --fail --silent --max-time 10 "http://127.0.0.1:$port/" | grep -qi '<html'; then
+    && curl --fail --silent --max-time 10 "http://127.0.0.1:$port/" | grep -i '<html' >/dev/null; then
     ready=true; break
   fi
   sleep 2
@@ -61,7 +61,7 @@ mv "$root/state/active-upstream.conf.next" "$root/state/active-upstream.conf"
 switched=true
 sudo -n /usr/sbin/nginx -t
 sudo -n /usr/sbin/nginx -s reload
-for attempt in $(seq 1 15); do
+for _ in $(seq 1 15); do
   if curl --fail --silent --max-time 3 http://127.0.0.1:3002/healthz | python3 -c 'import json,sys; assert json.load(sys.stdin)["revision"] == sys.argv[1]' "$revision" 2>/dev/null; then
     committed=true; break
   fi

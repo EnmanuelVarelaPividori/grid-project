@@ -11,18 +11,6 @@ export default defineConfig({
 			"@": path.resolve(import.meta.dirname, "./src"),
 		},
 	},
-	run: {
-		tasks: {
-			dev: "vp dev",
-			build: "vp build",
-			preview: "vp preview",
-			format: "vp fmt",
-			lint: "vp lint",
-			"lint:fix": "vp lint --fix",
-			check: "vp check",
-			"check:fix": "vp check --fix",
-		},
-	},
 	plugins: [devtools(), tanstackStart(), react({compiler: true}), tailwindcss()],
 	fmt: {
 		ignorePatterns: ["dist/**", "node_modules/**", "routeTree.gen.ts", "skills/**"],
