@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Production build outputs
+dist/
+dist-ssr/
+
+# Vite+ / TanStack temporary and cache files
+.tanstack/
+.vite-hooks/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
