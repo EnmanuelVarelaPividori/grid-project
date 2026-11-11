@@ -1,6 +1,7 @@
 import type {QueryClient} from "@tanstack/react-query";
 import {createRootRouteWithContext, HeadContent, Outlet, Scripts} from "@tanstack/react-router";
 import type {ReactNode} from "react";
+import {introScript} from "@/components/gridshare/dot-field";
 import {DevtoolsProvider} from "@/providers/DevtoolsProvider.tsx";
 import appCss from "@/styles/globals.css?url";
 
@@ -15,6 +16,8 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 			{href: "/favicon.svg", rel: "icon", type: "image/svg+xml"},
 			{href: appCss, rel: "stylesheet"},
 		],
+		// Decides before first paint whether the shader intro plays, so it never flashes for returning visitors.
+		scripts: [{children: introScript}],
 		meta: [
 			{charSet: "utf-8"},
 			{content: "width=device-width, initial-scale=1", name: "viewport"},
@@ -42,6 +45,9 @@ function RootDocument({children}: Readonly<{children: ReactNode}>) {
 		<html suppressHydrationWarning lang="en">
 			<head>
 				<HeadContent />
+				<noscript>
+					<style>{".gs-intro{display:none}"}</style>
+				</noscript>
 			</head>
 			<body>
 				{children}

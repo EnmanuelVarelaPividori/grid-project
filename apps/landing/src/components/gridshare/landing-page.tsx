@@ -6,6 +6,7 @@ import type {FormEvent} from "react";
 import {dayFeed, predictSavings, profiles, suppliers} from "@/lib/autopilot";
 import type {Asset, CustomerType, SupplierId} from "@/lib/autopilot";
 import {average, fetchLocation, fetchWeather, snapshot} from "@/lib/energy-data";
+import {DotField} from "./dot-field";
 import {EnergyMap} from "./energy-map";
 import {Brand, CheckIcon, KindIcon} from "./icons";
 import {StreetChart} from "./street-chart";
@@ -160,13 +161,13 @@ function SignupDialog({kind, onClose}: {kind: "pilot" | "supplier" | null; onClo
 
 function AutopilotDemo() {
 	const [type, setType] = useState<CustomerType>("home");
-	const [supplier, setSupplier] = useState<SupplierId>("noord");
+	const [supplier, setSupplier] = useState<SupplierId>("vattenfall");
 	const [use, setUse] = useState(profiles.home.defaults.use);
 	const [price, setPrice] = useState(profiles.home.defaults.price);
 	const profile = profiles[type];
-	const {name: supplierName, sharing} = suppliers[supplier];
-	const feed = dayFeed(type, supplier);
-	const prediction = predictSavings(type, sharing, Number(use), Number(price));
+	const feed = dayFeed(type);
+	// No Dutch supplier offers energy sharing yet: the prediction counts steering only and shows sharing as an outline.
+	const prediction = predictSavings(type, false, Number(use), Number(price));
 	const pickType = (next: CustomerType) => {
 		setType(next);
 		setUse(profiles[next].defaults.use);
@@ -175,16 +176,13 @@ function AutopilotDemo() {
 	return (
 		<div className="gs-autopilot-grid">
 			<div className="gs-card gs-setup">
-				<div>
-					<p className="gs-field-caption">I’m a</p>
-					<div aria-label="Type" className="gs-segment gs-segment-fill" role="group">
-						<button aria-pressed={type === "home"} className="gs-btn" type="button" onClick={() => pickType("home")}>
-							Household
-						</button>
-						<button aria-pressed={type === "biz"} className="gs-btn" type="button" onClick={() => pickType("biz")}>
-							Business
-						</button>
-					</div>
+				<div aria-label="I’m a" className="gs-segment gs-segment-fill" role="group">
+					<button aria-pressed={type === "home"} className="gs-btn" type="button" onClick={() => pickType("home")}>
+						Household
+					</button>
+					<button aria-pressed={type === "biz"} className="gs-btn" type="button" onClick={() => pickType("biz")}>
+						Business
+					</button>
 				</div>
 				<div>
 					<p className="gs-field-caption">{profile.assetsLabel}</p>
@@ -192,7 +190,7 @@ function AutopilotDemo() {
 						{profile.assets.map(([asset, label]) => (
 							<span key={label} className="gs-asset-chip">
 								<span className={`gs-kind gs-kind-${asset}`}>
-									<KindIcon kind={asset} size={12} />
+									<KindIcon kind={asset} size={11} />
 								</span>
 								{label}
 							</span>
@@ -200,7 +198,6 @@ function AutopilotDemo() {
 					</div>
 				</div>
 				<div>
-					<p className="gs-field-caption">Your current situation</p>
 					<div className="gs-field-pair">
 						<div>
 							<label className="gs-field-label" htmlFor="ap-use">
@@ -241,8 +238,8 @@ function AutopilotDemo() {
 					<p className="gs-hint">{profile.hint}</p>
 				</div>
 				<div>
-					<label className="gs-field-caption" htmlFor="ap-supplier">
-						Your energy supplier
+					<label className="gs-field-label" htmlFor="ap-supplier">
+						Energy supplier
 					</label>
 					<div className="gs-select-wrap">
 						<select
@@ -252,7 +249,7 @@ function AutopilotDemo() {
 							onChange={(event) => setSupplier(event.target.value as SupplierId)}>
 							{(Object.keys(suppliers) as SupplierId[]).map((id) => (
 								<option key={id} value={id}>
-									{suppliers[id].name}
+									{suppliers[id]}
 								</option>
 							))}
 						</select>
@@ -268,57 +265,41 @@ function AutopilotDemo() {
 							<path d="m6 9 6 6 6-6" />
 						</svg>
 					</div>
-					<p className={sharing ? "gs-hint gs-hint-ok" : "gs-hint gs-hint-warn"}>
-						{sharing
-							? "✓ Supports energy sharing: Autopilot can share with neighbours"
-							: `Steering works today; sharing with neighbours unlocks once ${supplierName} supports it`}
+					<p className="gs-hint">
+						Works alongside {supplier === "other" ? "your supplier" : suppliers[supplier]}: your contract and bill stay
+						the same.
 					</p>
 				</div>
-				<div>
-					<p className="gs-field-caption">Always guaranteed</p>
-					<ul className="gs-promises">
-						{profile.promises.map((promise) => (
-							<li key={promise}>
-								<CheckIcon />
-								<span>{promise}</span>
-							</li>
-						))}
-					</ul>
-				</div>
+				<ul className="gs-promises">
+					{profile.promises.map((promise) => (
+						<li key={promise}>
+							<CheckIcon size={14} />
+							<span>{promise}</span>
+						</li>
+					))}
+				</ul>
 			</div>
 
 			<div className="gs-card gs-feed-card">
-				<div className="gs-card-heading">
-					<div>
-						<p className="gs-card-title">What Autopilot did for you yesterday</p>
-						<p className="gs-card-sub">{profile.feedName} · Oosterpoort, Groningen · simulated</p>
-					</div>
-					<span className="gs-status">Autopilot on</span>
-				</div>
 				<div aria-live="polite" className="gs-prediction">
 					<div className="gs-prediction-copy">
-						<p className="gs-prediction-label">Predicted savings · next 12 months</p>
+						<div className="gs-prediction-top">
+							<p className="gs-prediction-label">Predicted savings · next 12 months</p>
+							<span className="gs-status">Autopilot on</span>
+						</div>
 						<p className="gs-display gs-num gs-prediction-total">€{money(prediction.total)}</p>
 						<p className="gs-num gs-prediction-range">
-							≈ €{money(prediction.monthly)} a month · likely between €{money(prediction.low)} and €
-							{money(prediction.high)}
-						</p>
-						<p className="gs-num gs-prediction-bill">
-							That’s about {prediction.percentOfBill}% of your current bill of €{money(prediction.bill)} a year.
+							≈ €{money(prediction.monthly)}/month · about {prediction.percentOfBill}% of your €{money(prediction.bill)}{" "}
+							bill
 						</p>
 						<div className="gs-prediction-legend">
 							<span>
-								<i style={{background: "#B9CDA3"}} />
-								Smart steering of your devices <b className="gs-num">€{money(prediction.steer)}</b>
+								<i className="gs-legend-steer" />
+								Steering €{money(prediction.steer)}
 							</span>
 							<span>
-								<i style={{background: "#8FB872"}} />
-								{sharing
-									? type === "home"
-										? "Selling solar to neighbours"
-										: "Buying local solar"
-									: "Extra once your supplier supports sharing"}{" "}
-								<b className="gs-num">€{money(prediction.share)}</b>
+								<i className="gs-legend-share" />
+								Sharing, once it opens +€{money(prediction.share)}
 							</span>
 						</div>
 					</div>
@@ -327,14 +308,8 @@ function AutopilotDemo() {
 							{prediction.bars.map((bar) => (
 								<div key={bar.month}>
 									<span className="gs-bar-ghost" style={{height: percent(bar.ghost)}} />
-									<span
-										className="gs-bar-share"
-										style={{height: percent(bar.share), borderRadius: sharing ? "4px 4px 0 0" : 0}}
-									/>
-									<span
-										className="gs-bar-steer"
-										style={{height: percent(bar.steer), borderRadius: sharing ? "0 0 3px 3px" : "4px 4px 3px 3px"}}
-									/>
+									<span className="gs-bar-share" style={{height: percent(bar.share)}} />
+									<span className="gs-bar-steer" style={{height: percent(bar.steer)}} />
 								</div>
 							))}
 						</div>
@@ -344,38 +319,21 @@ function AutopilotDemo() {
 							))}
 						</div>
 					</div>
-					<p className="gs-prediction-note">
-						Estimate from your yearly use and price, your devices, Groningen weather history and recorded price
-						snapshots. Summer brings more solar to share; winter savings come mostly from steering. Simulated for this
-						demo.
-					</p>
 				</div>
-				<div className="gs-stat-grid">
-					<div className="gs-stat">
-						<p>Saved and earned</p>
-						<p className="gs-display gs-num">€{feed.money.toFixed(2)}</p>
-					</div>
-					<div className="gs-stat">
-						<p>Shared with neighbours</p>
-						<p className="gs-display gs-num">
-							{feed.shared.toFixed(1)}
-							<small>kWh</small>
-						</p>
-					</div>
-					<div className="gs-stat">
-						<p>Your use in the 17–20h peak</p>
-						<p className="gs-display gs-num">
-							−{profile.peak}
-							<small>%</small>
-						</p>
-					</div>
+				<div className="gs-feed-heading">
+					<p>
+						Yesterday on Autopilot <span>· {profile.feedName} · Oosterpoort, Groningen · simulated</span>
+					</p>
+					<p className="gs-num">
+						<b>+€{feed.money.toFixed(2)}</b> · peak use −{profile.peak}%
+					</p>
 				</div>
 				<ul aria-label="Autopilot actions yesterday" className="gs-feed">
 					{feed.items.map((item) => (
-						<li key={`${type}-${item.time}`} className={item.blocked ? "is-blocked" : ""}>
+						<li key={`${type}-${item.time}`}>
 							<span className="gs-num gs-feed-time">{item.time}</span>
-							<span className={`gs-feed-icon gs-kind gs-kind-${item.blocked ? "blocked" : item.kind}`}>
-								<KindIcon kind={item.kind} />
+							<span className={`gs-feed-icon gs-kind gs-kind-${item.kind}`}>
+								<KindIcon kind={item.kind} size={13} />
 							</span>
 							<span className="gs-feed-body">
 								<span className="gs-feed-title">{item.title}</span>
@@ -387,11 +345,21 @@ function AutopilotDemo() {
 							</span>
 						</li>
 					))}
+					<li key={`${type}-soon`} className="is-soon">
+						<span className="gs-num gs-feed-time">Soon</span>
+						<span className="gs-feed-icon gs-kind gs-kind-blocked">
+							<KindIcon kind="share" size={13} />
+						</span>
+						<span className="gs-feed-body">
+							<span className="gs-feed-title">Sharing with neighbours</span>
+							<span className="gs-feed-detail">Starts once Dutch suppliers offer energy sharing</span>
+						</span>
+						<span className="gs-feed-value">
+							<span className="gs-display gs-num">+€{feed.potential.toFixed(2)}</span>
+							<span className="gs-feed-tag">potential</span>
+						</span>
+					</li>
 				</ul>
-				<p className="gs-fine">
-					Autopilot plans every evening for the next day and re-plans when forecasts change. One tap in the app takes
-					back control for as long as you like.
-				</p>
 			</div>
 		</div>
 	);
@@ -420,6 +388,7 @@ export function LandingPage() {
 
 	return (
 		<div className="gridshare-page">
+			<DotField />
 			<a className="gs-skip-link" href="#autopilot">
 				Skip to the Autopilot demo
 			</a>
@@ -476,14 +445,15 @@ export function LandingPage() {
 					</section>
 
 					<section aria-labelledby="autopilot-title" className="gs-section gs-section-tight" id="autopilot">
-						<div className="gs-section-heading">
-							<p className="gs-eyebrow gs-display">01 · Autopilot</p>
-							<h2 className="gs-display" id="autopilot-title">
-								One yes. We handle the rest.
-							</h2>
-							<p className="gs-lede">
-								Autopilot is on from day one. No sliders, no trading: we plan every device on your street together so
-								the grid stays calm and everyone pays less. The promises are fixed, and you can switch it off any time.
+						<div className="gs-autopilot-heading">
+							<div>
+								<p className="gs-eyebrow gs-display">01 · Autopilot</p>
+								<h2 className="gs-display" id="autopilot-title">
+									One yes. We handle the rest.
+								</h2>
+							</div>
+							<p>
+								On from day one. We plan every device on your street together, so the grid stays calm and you pay less.
 							</p>
 						</div>
 						<AutopilotDemo />
@@ -674,8 +644,9 @@ export function LandingPage() {
 				<footer className="gs-footer">
 					<Brand small />
 					<p>
-						Proof of concept. Neighbours, businesses, suppliers, prices and savings shown here are fictional. The “AI”
-						is a simplified rule set that stands in for real forecasting and optimisation models.
+						Proof of concept. Neighbours, businesses, prices and savings shown here are fictional. Supplier names are
+						listed for illustration only; GridShare is not affiliated with them. The “AI” is a simplified rule set that
+						stands in for real forecasting and optimisation models.
 					</p>
 				</footer>
 			</div>
