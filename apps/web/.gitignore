@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+data/gridshare.sqlite3
+data/gridshare.sqlite3-*
+*.log
+.DS_Store
+
+# HeroUI frontend build dependencies
+hero-ui/node_modules/
+hero-ui/.vite/
+hero-ui/dist/
+
+# Third-party reference document: not redistributed in this public repository
+docs/Startup_Blueprint_Reference.pdf

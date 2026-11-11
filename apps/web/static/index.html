@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<meta name="theme-color" content="#152a29" />
+		<title>GridShare AI • Groningen</title>
+		<link rel="stylesheet" href="/static/styles.css" />
+	</head>
+	<body>
+		<div class="app-shell" id="app-shell">
+			<aside class="sidebar">
+				<div class="logo-row">
+					<div class="logo-icon">↗<span>⚡</span></div>
+					<div class="brand-name">gridshare<span class="brand-dot">.</span><small>AI ENERGY NETWORK</small></div>
+				</div>
+				<div class="sidebar-label">WORKSPACE</div>
+				<nav class="sidebar-nav" aria-label="Main navigation">
+					<button class="nav-item active" data-page="explore">
+						<span class="nav-symbol">◈</span> Explore map <span class="nav-pip"></span>
+					</button>
+					<button class="nav-item" data-page="intelligence"><span class="nav-symbol">⌁</span> Grid intelligence</button>
+					<button class="nav-item" data-page="backtest"><span class="nav-symbol">▥</span> Model backtesting</button>
+					<button class="nav-item" data-page="myspace"><span class="nav-symbol">◉</span> My space</button>
+				</nav>
+				<div class="sidebar-label side-spaced">MARKETPLACE</div>
+				<div class="sidebar-legend">
+					<span class="legend-dot solar"></span> Surplus electricity <strong id="side-count-solar">0</strong>
+				</div>
+				<div class="sidebar-legend">
+					<span class="legend-dot battery"></span> Battery storage <strong id="side-count-battery">0</strong>
+				</div>
+				<div class="sidebar-legend">
+					<span class="legend-dot mcc"></span> MCC flexibility <strong id="side-count-mcc">0</strong>
+				</div>
+				<div class="sidebar-legend">
+					<span class="legend-dot demand"></span> Energy demand <strong id="side-count-demand">0</strong>
+				</div>
+				<div class="sidebar-bottom">
+					<div class="simulation-box">
+						<div class="sim-upper"><span class="alive-dot"></span> LOCAL DEMO MODE</div>
+						<p>Real Groningen geography when online. Energy values, listings and feeder are simulated.</p>
+						<a href="https://capaciteitskaart.netbeheernederland.nl/" target="_blank" rel="noopener"
+							>Official capacity map ↗</a
+						>
+					</div>
+					<button class="side-help" id="sources-button">ⓘ &nbsp; Data sources & limitations</button>
+					<div class="copyright">GRIDSHARE / STUDENT PROTOTYPE · 2026</div>
+				</div>
+			</aside>
+
+			<main class="main-panel">
+				<header class="topbar">
+					<div class="location-chip">
+						⌖ &nbsp;<strong>Groningen</strong><span>Netherlands</span><span class="caret">⌄</span>
+					</div>
+					<div class="top-right">
+						<span class="top-inform">● Synthetic grid simulation</span>
+						<div class="vline"></div>
+						<label class="date-wrap" for="scenario-date"
+							>Scenario
+							<input type="date" id="scenario-date" min="2026-01-01" max="2026-12-31" value="2026-11-12" /></label
+						><button class="profile-button" id="profile-btn" aria-label="Open profile">
+							<span id="profile-initial">+</span>
+						</button>
+					</div>
+				</header>
+
+				<section class="page-view active" id="page-explore">
+					<div class="hero row-space">
+						<div>
+							<span class="eyebrow"><span class="alive-dot green"></span> CONNECTING WHAT'S ALREADY HERE</span>
+							<h1>More energy. <em>Less waste.</em></h1>
+							<p>Discover electricity, storage and grid flexibility across Groningen — all in one place.</p>
+						</div>
+						<button class="button-primary large" id="start-listing">+ &nbsp;List a resource</button>
+					</div>
+					<div class="stats-row" id="stats-row">
+						<div class="stat-card">
+							<div class="stat-icon solar-bg">☀</div>
+							<div>
+								<span class="muted-label">RENEWABLE ELECTRICITY</span>
+								<div class="stat-value" id="stat-solar">—</div>
+								<small>Illustrative offered energy</small>
+							</div>
+						</div>
+						<div class="stat-card">
+							<div class="stat-icon battery-bg">▰</div>
+							<div>
+								<span class="muted-label">AVAILABLE BATTERY STORAGE</span>
+								<div class="stat-value" id="stat-battery">—</div>
+								<small>Demo capacity</small>
+							</div>
+						</div>
+						<div class="stat-card">
+							<div class="stat-icon mcc-bg">⌁</div>
+							<div>
+								<span class="muted-label">MCC FLEXIBILITY</span>
+								<div class="stat-value" id="stat-mcc">—</div>
+								<small>Unverified candidate power</small>
+							</div>
+						</div>
+					</div>
+					<div class="map-toolbar row-space">
+						<div>
+							<h2>Explore your energy network <span class="small-pill">Groningen only</span></h2>
+							<p>Tap a marker, view the opportunity, and let the matching engine do the work.</p>
+						</div>
+						<div class="map-right-action">
+							<button class="button-ghost" id="toggle-gis">⌁ &nbsp;Public cable layer</button
+							><button class="button-ghost" id="toggle-congestion">◌ &nbsp;Demo congestion overlay</button
+							><button class="button-ghost" id="zoom-reset">⌖ &nbsp;Reset map</button>
+						</div>
+					</div>
+					<div class="map-layout">
+						<div class="map-main" id="map-viewport">
+							<div class="map-stage" id="map-stage">
+								<svg
+									id="fallback-map"
+									class="fallback-map"
+									viewBox="0 0 1400 1000"
+									preserveAspectRatio="none"
+									aria-hidden="true">
+									<defs>
+										<pattern id="grain" width="38" height="38" patternUnits="userSpaceOnUse">
+											<path d="M38 0H0V38" fill="none" stroke="#e0e8df" stroke-width="1" />
+										</pattern>
+										<linearGradient id="mapbg" x1="0" y1="0" x2="1" y2="1">
+											<stop stop-color="#eaf0e9" />
+											<stop offset="1" stop-color="#dae7d9" />
+										</linearGradient>
+									</defs>
+									<rect x="0" y="0" width="1400" height="1000" fill="url(#mapbg)" />
+									<rect x="0" y="0" width="1400" height="1000" fill="url(#grain)" opacity=".55" />
+									<g fill="#c3dbbb" opacity=".85">
+										<path d="M105 275Q220 150 360 218L345 410Q165 430 105 275" />
+										<path d="M650 100Q790 25 880 155L855 280Q730 260 650 100" />
+										<path d="M1115 375Q1210 275 1370 340L1320 525Q1200 490 1115 375" />
+										<path d="M60 720Q230 650 300 790L210 970L20 925Z" />
+									</g>
+									<g fill="none" stroke="#a9d6d7" stroke-linecap="round">
+										<path d="M90 720Q235 640 410 600Q580 555 780 630Q970 710 1330 660" stroke-width="33" />
+										<path d="M530 0Q560 180 625 335Q670 500 700 670Q780 820 820 1000" stroke-width="25" />
+										<path d="M40 320Q290 390 410 520Q510 625 550 790" stroke-width="16" />
+									</g>
+									<g fill="none" stroke="#fdfef9" stroke-linecap="round" stroke-linejoin="round">
+										<path
+											d="M0 390L1400 580 M10 180L1290 940 M0 730L1090 0 M260 0L380 1000 M960 0L1060 1000 M1230 0L200 995"
+											stroke-width="27" />
+										<path
+											d="M0 250L1400 380 M0 530L1400 775 M100 1000L1320 125 M600 0L520 1000 M815 0L1320 1000 M0 900L1380 100 M0 65L1350 945"
+											stroke-width="16" />
+										<path
+											d="M0 470L1400 880 M170 0L1400 650 M0 980L900 0 M1110 0L950 1000 M0 605L1400 250"
+											stroke-width="9" />
+									</g>
+									<g fill="#bacbbd" opacity=".55">
+										<rect x="385" y="230" width="75" height="65" rx="8" />
+										<rect x="486" y="270" width="55" height="85" rx="8" />
+										<rect x="725" y="410" width="85" height="70" rx="8" />
+										<rect x="1030" y="305" width="80" height="115" rx="8" />
+										<rect x="540" y="820" width="75" height="65" rx="8" />
+										<rect x="1170" y="760" width="95" height="55" rx="8" />
+									</g>
+									<g font-family="Arial,sans-serif" font-weight="600" font-size="21" fill="#829488" opacity=".9">
+										<text x="430" y="492">GROTE MARKT</text>
+										<text x="220" y="255">NOORDERPLANTSOEN</text>
+										<text x="1015" y="620">SONTPLEIN</text>
+										<text x="1070" y="285">EUVELGUNNE</text>
+										<text x="260" y="845">STATION</text>
+										<text x="550" y="910">HELP<span>MAN</span></text>
+										<text x="205" y="130">ZERNIKE CAMPUS</text>
+									</g>
+								</svg>
+								<div class="tile-layer" id="tile-layer" aria-hidden="true"></div>
+								<img
+									class="published-gis"
+									id="published-gis"
+									alt="Published Groningen medium-voltage cable and station GIS overlay; not live capacity"
+									hidden />
+								<div class="congestion-layer" id="congestion-layer">
+									<div class="heat heat-a"></div>
+									<div class="heat heat-b"></div>
+									<div class="heat heat-c"></div>
+								</div>
+								<svg class="demo-connections" viewBox="0 0 1400 1000" preserveAspectRatio="none" aria-hidden="true">
+									<path d="M1050 430C1130 540 1160 610 1250 650" />
+									<path d="M1050 430Q980 470 930 525T785 590" />
+									<path d="M1050 430L1180 360" />
+								</svg>
+								<div id="markers" class="markers"></div>
+							</div>
+							<div class="floating-search">
+								<span class="search-icon">⌕</span
+								><input id="map-search" placeholder="Search Groningen opportunities…" autocomplete="off" /><span
+									class="search-hint"
+									>⌘ K</span
+								>
+							</div>
+							<div class="filter-chips" id="filter-chips">
+								<button class="filter-chip selected" data-filter="all">All <span id="filter-all-count">0</span></button
+								><button class="filter-chip" data-filter="solar"><i class="dot solar"></i>Solar</button
+								><button class="filter-chip" data-filter="battery"><i class="dot battery"></i>Batteries</button
+								><button class="filter-chip" data-filter="mcc"><i class="dot mcc"></i>MCC</button
+								><button class="filter-chip" data-filter="demand"><i class="dot demand"></i>Demand</button>
+							</div>
+							<div class="map-dim-note">
+								<span class="alive-dot"></span> Simulated listings and congestion ·
+								<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener"
+									>© OpenStreetMap contributors</a
+								>
+							</div>
+							<div class="map-controls">
+								<button id="zoom-in" title="Zoom in">+</button><button id="zoom-out" title="Zoom out">−</button
+								><button id="zoom-home" title="Recenter">◎</button>
+							</div>
+						</div>
+						<div class="details-panel" id="details-panel">
+							<div class="details-placeholder">
+								<div class="placeholder-art">⌁<i>⚡</i></div>
+								<h3>Choose a location</h3>
+								<p>Select a pin on the map to explore available energy, batteries, and grid flexibility.</p>
+								<div class="explore-cta" id="select-first">Show me an opportunity →</div>
+							</div>
+						</div>
+					</div>
+					<div class="section-heading row-space">
+						<div>
+							<span class="eyebrow">THE MATCHING ENGINE</span>
+							<h2>AI-recommended opportunities</h2>
+							<p>Discover tomorrow's best options, with compatibility checks and transparent assumptions.</p>
+						</div>
+						<button class="text-link" id="open-intelligence">Explore intelligence <span>↗</span></button>
+					</div>
+					<div class="match-grid" id="match-grid">
+						<div class="skeleton"></div>
+						<div class="skeleton"></div>
+						<div class="skeleton"></div>
+					</div>
+					<div class="disclaimer-strip">
+						ⓘ &nbsp; This is a functional <strong>synthetic-data research prototype</strong>. No live meter access,
+						electricity transaction, grid connection verification or device control is provided.
+					</div>
+				</section>
+
+				<section class="page-view" id="page-intelligence">
+					<div class="hero smaller">
+						<span class="eyebrow"><span class="alive-dot green"></span> GRID INTELLIGENCE LAB</span>
+						<h1>See the value of <em>coordination.</em></h1>
+						<p>
+							One fictional Groningen feeder. 15-minute forecasts, scheduling and transparent before/after scenarios.
+						</p>
+					</div>
+					<div class="analysis-highlight">
+						<div>
+							<span>DEMO FEEDER LIMIT</span><strong id="feeder-title">325 kW</strong
+							><small>Illustrative cap — not Enexis measurement</small>
+						</div>
+						<div>
+							<span>FORECAST HORIZON</span><strong>96 × 15 min</strong><small>24 hours in a scenario day</small>
+						</div>
+						<div><span>BATTERY CYCLE EFFICIENCY</span><strong>90%</strong><small>Explicit loss assumption</small></div>
+					</div>
+					<div class="chart-card">
+						<div class="row-space chart-header">
+							<div>
+								<h2>Demand vs. optimized grid load</h2>
+								<p>Net import after modeled solar production and flexibility coordination</p>
+							</div>
+							<select id="scenario-select" aria-label="Scenario">
+								<option value="gridshare_ai">GridShare optimized</option>
+								<option value="rule_based">Rule-based</option>
+								<option value="best_solo">Best solo</option>
+								<option value="no_coord">No coordination</option>
+							</select>
+						</div>
+						<div class="chart-legend">
+							<span><i class="line-swatch before"></i>Before coordination</span
+							><span><i class="line-swatch after"></i>After coordination</span
+							><span><i class="line-swatch cap"></i>Illustrative feeder limit</span
+							><span><i class="line-swatch band"></i>Heuristic uncertainty band</span>
+						</div>
+						<svg
+							class="forecast-chart"
+							id="forecast-chart"
+							viewBox="0 0 980 335"
+							preserveAspectRatio="none"
+							role="img"
+							aria-label="Energy consumption forecast chart"></svg>
+						<div class="chart-axis">
+							<span>00:00</span><span>04:00</span><span>08:00</span><span>12:00</span><span>16:00</span
+							><span>20:00</span><span>24:00</span>
+						</div>
+					</div>
+					<div class="metric-four" id="metric-four"></div>
+					<div class="white-card backtest-card deal-card">
+						<div class="row-space">
+							<div>
+								<span class="eyebrow">USER-LEVEL MATCH RANKING</span>
+								<h2 style="margin-top: 10px">Compare the best proposed deal per participant</h2>
+								<p style="font-size: 12px; color: #82988d; margin-top: 7px">
+									Candidate partner, overlap amount and indicative value. No trading eligibility is guaranteed.
+								</p>
+							</div>
+							<button class="button-ghost" id="refresh-deals">↻ Refresh matches</button>
+						</div>
+						<div class="table-overflow">
+							<table class="benchmark-table" id="deals-table">
+								<thead>
+									<tr>
+										<th>PARTICIPANT</th>
+										<th>PROPOSED PARTNER</th>
+										<th>OVERLAP</th>
+										<th>MODELLED VALUE*</th>
+										<th>COMPATIBILITY</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td colspan="5">Loading suggested partners…</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<p style="font-size: 10px; color: #90a096; margin-top: 13px">
+							*Gross illustrative value; not after-tax savings, actual settlement, or an executable electricity
+							contract.
+						</p>
+					</div>
+					<div class="explain-grid">
+						<div class="white-card">
+							<span class="eyebrow">HOW IT WORKS</span>
+							<h3>Forecast → Match → Schedule</h3>
+							<p>
+								Our locally trained seasonal/weather model forecasts demand and solar production. A constrained
+								heuristic shifts flexible charging and schedules a battery to reduce projected costs and avoid exceeding
+								the fictional feeder limit where possible.
+							</p>
+							<div class="detail-note">
+								The optimization is inspectable Python code, not a hidden LLM claim. Real grid safety cannot be inferred
+								from this demo.
+							</div>
+						</div>
+						<div class="white-card">
+							<span class="eyebrow">MODEL ASSUMPTIONS</span>
+							<h3>What is — and isn't — measured</h3>
+							<p>
+								Profiles, weather, tariffs, battery behavior, connection limits and feeders are synthetic. The official
+								grid sources are provided for planning context, not ingested as real-time capacity.
+							</p>
+							<a
+								class="inline-link"
+								href="https://capaciteitskaart.netbeheernederland.nl/"
+								target="_blank"
+								rel="noopener"
+								>Open official capacity map ↗</a
+							>
+						</div>
+					</div>
+				</section>
+
+				<section class="page-view" id="page-backtest">
+					<div class="hero smaller">
+						<span class="eyebrow"><span class="alive-dot green"></span> DATA SCIENCE & VALIDATION</span>
+						<h1>Prove it with <em>held-out data.</em></h1>
+						<p>
+							Forecasting and scheduling evaluated on two excluded October/November weeks from our 2026 synthetic
+							dataset.
+						</p>
+					</div>
+					<div class="analysis-highlight">
+						<div><span>TEST PERIOD</span><strong>14 days</strong><small>Two locked held-out weeks</small></div>
+						<div>
+							<span>FORECAST MAE — LOAD</span><strong id="mae-load">—</strong
+							><small>Mean absolute error, synthetic data</small>
+						</div>
+						<div>
+							<span>FORECAST MAE — SOLAR</span><strong id="mae-solar">—</strong
+							><small>Mean absolute error, synthetic data</small>
+						</div>
+					</div>
+					<div class="white-card backtest-card">
+						<div class="row-space">
+							<div>
+								<h2>Head-to-head benchmark</h2>
+								<p>No coordination, best solo, simple rules and GridShare optimized on the same test series</p>
+							</div>
+							<button class="button-ghost" id="rerun-backtest">↻ Rerun evaluation</button>
+						</div>
+						<div class="table-overflow">
+							<table class="benchmark-table" id="benchmark-table">
+								<thead>
+									<tr>
+										<th>STRATEGY</th>
+										<th>ENERGY COST</th>
+										<th>PEAK DEMAND</th>
+										<th>OVERLOAD HOURS</th>
+										<th>SAVINGS VS. NONE</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr>
+										<td colspan="5">Loading held-out evaluation…</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+						<div class="benchmark-bars" id="benchmark-bars"></div>
+					</div>
+					<div class="explain-grid">
+						<div class="white-card">
+							<h3>Training vs. test split</h3>
+							<p>
+								Year: January–December 2026; test weeks: 12–18 October and 26 October–1 November. Those weeks are
+								excluded from the seasonal model's training bins.
+							</p>
+							<span class="data-status">✓ Reproducible seeded synthetic data</span>
+						</div>
+						<div class="white-card">
+							<h3>What this score doesn't prove</h3>
+							<p>
+								These results measure relative performance inside a fictional cluster. They do not validate real Dutch
+								grid savings, regulation, financial returns or environmental claims.
+							</p>
+							<span class="data-status orange">◌ Real pilot data still required</span>
+						</div>
+					</div>
+				</section>
+
+				<section class="page-view" id="page-myspace">
+					<div class="hero smaller">
+						<span class="eyebrow"><span class="alive-dot green"></span> YOUR LOCAL WORKSPACE</span>
+						<h1>Make your energy <em>visible.</em></h1>
+						<p>
+							Create a local profile, choose what to share, publish demo listings and manage match requests. No separate
+							login page.
+						</p>
+					</div>
+					<div class="myspace-grid">
+						<div class="white-card">
+							<div class="row-space">
+								<h2>Account & contract</h2>
+								<button class="text-link" id="edit-profile">Edit details ↗</button>
+							</div>
+							<div id="my-profile-content" class="my-profile-content">No profile saved yet.</div>
+						</div>
+						<div class="white-card">
+							<div class="row-space">
+								<h2>My published resources</h2>
+								<button class="text-link" id="myspace-add">+ New listing</button>
+							</div>
+							<div id="my-listings-content" class="my-lists"></div>
+						</div>
+					</div>
+					<div class="white-card requests-card">
+						<h2>My local match requests</h2>
+						<p>Requests are saved only on this device. They do not contact suppliers or reserve capacity.</p>
+						<div id="my-requests-content"></div>
+					</div>
+				</section>
+
+				<footer class="page-footer">
+					<span>© 2026 GridShare AI · Groningen student prototype</span
+					><span>Built for research and demonstration · Not an energy supplier or grid operator</span>
+				</footer>
+			</main>
+		</div>
+
+		<div class="overlay" id="overlay" hidden></div>
+		<aside
+			class="drawer"
+			id="account-drawer"
+			aria-labelledby="account-drawer-title"
+			aria-modal="true"
+			role="dialog"
+			hidden>
+			<div class="drawer-head">
+				<div>
+					<div class="eyebrow">JOIN GRIDSHARE</div>
+					<h2 id="account-drawer-title">Create your local profile</h2>
+				</div>
+				<button class="close-button" data-close>✕</button>
+			</div>
+			<div class="drawer-scroll">
+				<p class="drawer-description">
+					Choose your account, energy contract and resources. This is a local prototype, not secure identity
+					verification.
+				</p>
+				<form id="account-form">
+					<div class="form-section-title">01 · Identity</div>
+					<div class="segment-row" id="account-type-options">
+						<label><input type="radio" name="account_type" value="person" checked /><span>◉ Individual</span></label
+						><label><input type="radio" name="account_type" value="business" /><span>▧ Business</span></label>
+					</div>
+					<label class="form-field"
+						>Display name / organization <input name="name" required placeholder="e.g. Groningen Solar Home" /></label
+					><label class="form-field"
+						>Email (optional, stored locally) <input name="email" type="email" placeholder="you@example.com" /></label
+					><label class="form-field"
+						>Neighborhood
+						<select name="location_area">
+							<option>Binnenstad</option>
+							<option>Oosterpoort</option>
+							<option>Noorderplantsoen</option>
+							<option>Helpman</option>
+							<option>Paddepoel</option>
+							<option>Euvelgunne</option>
+							<option>Sontplein</option>
+							<option>Zernike</option>
+						</select></label
+					>
+					<div class="form-section-title">02 · Your energy contract</div>
+					<label class="form-field"
+						>Electricity provider
+						<select name="supplier" id="supplier-select" required></select></label
+					><label class="form-field"
+						>Supply contract type
+						<select name="contract_type" required>
+							<option value="fixed">Fixed-price</option>
+							<option value="variable">Variable-price</option>
+							<option value="dynamic">Dynamic-hourly</option>
+							<option value="unknown">Not sure</option>
+						</select></label
+					>
+					<div class="field-grid">
+						<label class="form-field"
+							>Grid connection
+							<select name="connection_type" id="connection-select">
+								<option>1 × 35 A</option>
+								<option selected>3 × 25 A</option>
+								<option>3 × 35 A</option>
+								<option>3 × 80 A</option>
+								<option>3 × 160 A</option>
+								<option>3 × 250 A</option>
+								<option>Other / unknown</option>
+							</select></label
+						><label class="form-field"
+							>Maximum connection current (A)
+							<input name="connection_amps" type="number" min="0" max="5000" value="25" step="1"
+						/></label>
+					</div>
+					<label class="form-field"
+						>Contracted grid transport power (kW, if known)
+						<input name="contracted_kw" type="number" min="0" step="0.1" placeholder="Optional · especially for MCC"
+					/></label>
+					<div class="tiny-info">
+						MCC is our product nickname. Current (A), physical connection rating, and contracted transport capacity (kW)
+						are different. Your provider is not necessarily the grid operator.
+					</div>
+					<div class="form-section-title">03 · What do you participate with?</div>
+					<div class="checks-grid">
+						<label class="checkline"><input name="roles" type="checkbox" value="producer" /> ☀ Solar producer</label
+						><label class="checkline"
+							><input name="roles" type="checkbox" value="consumer" checked /> ⚡ Electricity consumer</label
+						><label class="checkline"><input name="roles" type="checkbox" value="battery" /> ▰ Battery owner</label
+						><label class="checkline"
+							><input name="roles" type="checkbox" value="business_capacity" /> ⌁ MCC / flexible business</label
+						>
+					</div>
+					<div class="field-grid">
+						<label class="form-field"
+							>Installed solar (kWp) <input name="solar_kwp" type="number" min="0" step="0.1" value="0" /></label
+						><label class="form-field"
+							>Battery size (kWh) <input name="battery_kwh" type="number" min="0" step="0.1" value="0"
+						/></label>
+					</div>
+					<div class="form-section-title">04 · Privacy & permission</div>
+					<label class="checkline strong"
+						><input name="share_public" type="checkbox" /> Show my demo listings publicly on this computer</label
+					><label class="checkline strong"
+						><input name="meter_consent" type="checkbox" /> I would consider allowing authorized meter integration in a
+						future pilot (not connected now)</label
+					><label class="checkline strong"
+						><input name="acknowledged_simulation" type="checkbox" required /> I understand there is no actual transfer,
+						booking, meter or financial transaction</label
+					>
+					<p class="form-error" id="profile-error"></p>
+					<button class="button-primary full" type="submit">Save local profile →</button>
+				</form>
+			</div>
+		</aside>
+
+		<aside
+			class="drawer"
+			id="listing-drawer"
+			aria-labelledby="listing-drawer-title"
+			aria-modal="true"
+			role="dialog"
+			hidden>
+			<div class="drawer-head">
+				<div>
+					<div class="eyebrow">PUBLISH AN OPPORTUNITY</div>
+					<h2 id="listing-drawer-title">List a demo resource</h2>
+				</div>
+				<button class="close-button" data-close>✕</button>
+			</div>
+			<div class="drawer-scroll">
+				<p class="drawer-description">
+					Create a marker on the Groningen map using fictional, user-supplied values. This never publishes to the
+					internet.
+				</p>
+				<form id="listing-form">
+					<label class="form-field"
+						>Resource type
+						<select name="kind">
+							<option value="solar">Surplus electricity</option>
+							<option value="battery">Available battery storage</option>
+							<option value="demand">Flexible electricity demand</option>
+							<option value="mcc">MCC contracted capacity coordination</option>
+						</select></label
+					><label class="form-field"
+						>Listing title <input name="name" placeholder="e.g. My rooftop solar" required /></label
+					><label class="form-field"
+						>Groningen neighborhood
+						<select name="location_area">
+							<option>Binnenstad</option>
+							<option>Oosterpoort</option>
+							<option>Euvelgunne</option>
+							<option>Helpman</option>
+							<option>Noorderplantsoen</option>
+							<option>Paddepoel</option>
+							<option>Sontplein</option>
+							<option>Zernike</option>
+						</select></label
+					>
+					<div class="field-grid">
+						<label class="form-field"
+							>Power (kW) <input name="power_kw" type="number" min="0.1" step="0.1" required value="5" /></label
+						><label class="form-field"
+							>Energy / capacity (kWh) <input name="energy_kwh" type="number" min="0" step="0.1" value="12"
+						/></label>
+					</div>
+					<div class="field-grid">
+						<label class="form-field"
+							>Indicative price (€ per kWh)
+							<input name="price" type="number" min="0" step="0.001" value="0.08" /></label
+						><label class="form-field">Availability window <input name="window" value="12:00–16:00" /></label>
+					</div>
+					<label class="form-field"
+						>Explanation / conditions
+						<textarea name="details" rows="4" placeholder="What is flexible? What equipment do you have?"></textarea>
+					</label>
+					<div class="tiny-info">
+						MCC listings are discovery signals only and must never be interpreted as tradable amperes or approved
+						transport capacity. Your home location is placed approximately within a neighborhood.
+					</div>
+					<p class="form-error" id="listing-error"></p>
+					<button class="button-primary full" type="submit">Publish on my demo map →</button>
+				</form>
+			</div>
+		</aside>
+
+		<aside
+			class="drawer"
+			id="request-drawer"
+			aria-labelledby="request-drawer-title"
+			aria-modal="true"
+			role="dialog"
+			hidden>
+			<div class="drawer-head">
+				<div>
+					<div class="eyebrow">MATCH PLANNING</div>
+					<h2 id="request-drawer-title">Request an opportunity</h2>
+				</div>
+				<button class="close-button" data-close>✕</button>
+			</div>
+			<div class="drawer-scroll">
+				<div class="request-summary" id="request-summary"></div>
+				<form id="request-form">
+					<input name="listing_id" type="hidden" /><label class="form-field"
+						>Amount requested
+						<div class="joined-input">
+							<input name="quantity" type="number" step="0.1" min="0.1" required /><span id="request-unit">kWh</span>
+						</div></label
+					><label class="form-field"
+						>Preferred scenario date
+						<input name="date" type="date" min="2026-01-01" max="2026-12-31" value="2026-11-12" /></label
+					><label class="form-field"
+						>Notes / flexible time windows
+						<textarea name="message" rows="4" placeholder="I can move my EV charging to 13:00–15:00…"></textarea>
+					</label>
+					<div class="tiny-info">
+						This creates a locally stored draft request, not a real booking, promise, electricity transfer, grid
+						contract or payment. Real eligibility needs contractual approval.
+					</div>
+					<p class="form-error" id="request-error"></p>
+					<button class="button-primary full" type="submit">Save draft request →</button>
+				</form>
+			</div>
+		</aside>
+
+		<div class="modal-shell" id="sources-modal" hidden>
+			<div class="modal-card">
+				<div class="row-space">
+					<div>
+						<span class="eyebrow">TRANSPARENCY</span>
+						<h2>Sources & limitations</h2>
+					</div>
+					<button class="close-button" data-close>✕</button>
+				</div>
+				<p>
+					GridShare is a fictional research prototype. All energy assets, listing values, connected feeder lines, heat
+					zones, prices and savings are simulated. Map tiles may use OpenStreetMap when internet is available.
+				</p>
+				<div id="sources-list"></div>
+				<div class="source-warning">
+					The official capacity map is linked for separate reference, not embedded as real-time data. The optional
+					published provincial GIS overlay (when online) shows medium-voltage infrastructure only, not live transferable
+					electricity or capacity. We do not claim real-time grid visibility or grid control.
+				</div>
+			</div>
+		</div>
+		<div id="toast" class="toast" role="status" aria-live="polite"></div>
+		<script src="/static/app.js" defer></script>
+	</body>
+</html>

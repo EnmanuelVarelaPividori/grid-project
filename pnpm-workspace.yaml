@@ -1,5 +1,6 @@
 packages:
   - apps/*
+  - apps/web/hero-ui
 
 minimumReleaseAge: 0
 
