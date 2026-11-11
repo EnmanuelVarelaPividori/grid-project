@@ -1,0 +1,24 @@
+{
+	"name": "gridshare-monorepo",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "pnpm --filter @gridshare/landing dev",
+		"dev:landing": "pnpm --filter @gridshare/landing dev",
+		"build": "pnpm -r run build",
+		"check": "vp check",
+		"test": "vp test",
+		"format": "vp fmt"
+	},
+	"devDependencies": {
+		"@types/node": "^26.6.6",
+		"eslint": "^10.14.0",
+		"eslint-plugin-react": "^7.37.5",
+		"oxlint-tailwindcss": "^1.17.1",
+		"typescript": "^7.0.2",
+		"vite": "catalog:",
+		"vite-plus": "catalog:"
+	},
+	"packageManager": "pnpm@12.18.0"
+}
