@@ -28,7 +28,7 @@ const scenarios = {
 	},
 	after: {
 		...chart(streetLoad.after.homes, streetLoad.after.businesses),
-		lineColor: "#2E372D",
+		lineColor: "#141A13",
 		moved: Math.round(energyMoved()),
 	},
 };
@@ -63,17 +63,17 @@ export function StreetChart() {
 				</div>
 			</div>
 			<svg aria-label={label} className="gs-street-svg" role="img" viewBox="0 0 720 250">
-				<line stroke="#E5E8DF" x1="40" x2="700" y1="220" y2="220" />
+				<line stroke="#E6E8E2" x1="40" x2="700" y1="220" y2="220" />
 				{[153.3, 86.7, 20].map((line) => (
 					<line key={line} stroke="#F1F2EE" x1="40" x2="700" y1={line} y2={line} />
 				))}
 				{[0, 40, 80, 120].map((kw) => (
-					<text key={kw} fill="#7A8274" fontSize="11" textAnchor="end" x="32" y={Number(y(kw)) + 4}>
+					<text key={kw} fill="#6B7366" fontSize="11" textAnchor="end" x="32" y={Number(y(kw)) + 4}>
 						{kw}
 					</text>
 				))}
 				<path className="gs-morph" fill="#9FB7C4" fillOpacity=".7" {...morph(scenario.businessArea)} />
-				<path className="gs-morph" fill="#B9CDA3" fillOpacity=".8" {...morph(scenario.homeArea)} />
+				<path className="gs-morph" fill="#A6D884" fillOpacity=".8" {...morph(scenario.homeArea)} />
 				<line
 					stroke="#B5541C"
 					strokeDasharray="6 5"
@@ -104,7 +104,7 @@ export function StreetChart() {
 			</div>
 			<div className="gs-legend">
 				<span>
-					<i className="gs-swatch" style={{background: "#B9CDA3"}} />
+					<i className="gs-swatch" style={{background: "#A6D884"}} />
 					Households
 				</span>
 				<span>

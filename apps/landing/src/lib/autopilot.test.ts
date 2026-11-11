@@ -38,19 +38,25 @@ describe("savings prediction", () => {
 });
 
 describe("Autopilot day feed", () => {
-	it("adds up yesterday's savings and shared energy", () => {
-		const feed = dayFeed("home", "noord");
-		expect(feed.money).toBeCloseTo(2.88);
-		expect(feed.shared).toBeCloseTo(6.5);
-		expect(feed.items.some((item) => item.blocked)).toBe(false);
+	it("counts only steering in yesterday's savings and keeps sharing as a potential", () => {
+		const home = dayFeed("home");
+		expect(home.items.some((item) => item.share)).toBe(false);
+		expect(home.items).toHaveLength(4);
+		expect(home.money).toBeCloseTo(1.92);
+		expect(home.potential).toBeCloseTo(0.96);
 	});
-	it("blocks local shares when the supplier does not support sharing", () => {
-		const feed = dayFeed("home", "vast");
-		expect(feed.shared).toBe(0);
-		expect(feed.money).toBeCloseTo(1.92);
-		const blocked = feed.items.filter((item) => item.blocked);
-		expect(blocked).toHaveLength(3);
-		for (const item of blocked) expect(item.save).toBe(0);
+	it("matches the business example: +€3.02 yesterday and €0.84 potential", () => {
+		const biz = dayFeed("biz");
+		expect(biz.items).toHaveLength(3);
+		expect(biz.money).toBeCloseTo(3.02);
+		expect(biz.potential).toBeCloseTo(0.84);
+	});
+	it("predicts €750 a year for the default business without sharing", () => {
+		const result = predictSavings("biz", false, 30000, 0.25);
+		expect(result.total).toBe(750);
+		expect(Math.round(result.monthly)).toBe(63);
+		expect(result.percentOfBill).toBe(10);
+		expect(result.share).toBe(135);
 	});
 });
 

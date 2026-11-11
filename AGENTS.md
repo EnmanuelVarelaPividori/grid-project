@@ -93,6 +93,7 @@ release. Add a tool name to select part of the graph. For example, run
 
 - `apps/landing` is the marketing app: the GridShare landing page and interactive Autopilot demo. Preserve its design and behaviour.
 - `apps/web` is the GridShare Groningen dashboard: a standard-library Python server (`app.py`, `engine/`) with SQLite persistence, a React 19 + shadcn/ui dashboard interface in `apps/web/hero-ui` (the `@gridshare/web` pnpm workspace) and the original interface in `apps/web/static` (served at `/classic`). See `apps/web/README.md`. Run its tests with `python3 -m unittest discover -s tests` from `apps/web`.
+- `engines/` holds non-JS projects, such as the Python simulation in `engines/gridshare`, each with its own tooling. The root Vite+ format and lint checks skip `engines/**`; run an engine's own commands from its directory.
 - Use the single root pnpm workspace and lockfile. Root Vite config centralizes lint/format settings; the landing's Vite config owns its build and framework plugins.
 - Run `pnpm dev` (landing, port 5173), `pnpm dev:api` (Python, port 8765), `pnpm dev:web` (dashboard, port 5175), `pnpm check`, `pnpm test`, and `pnpm build` from the repository root. The root test config discovers landing tests and dashboard calculation tests.
 - Debug panels and the Vite debug plugin are opt-in with `VITE_DEVTOOLS=true`.

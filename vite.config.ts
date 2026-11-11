@@ -3,6 +3,7 @@ import {defineConfig} from "vite-plus";
 export default defineConfig({
 	defaultPackage: "./apps/landing",
 	fmt: {
+		// engines/ holds non-JS projects with their own tooling and generated outputs.
 		ignorePatterns: [
 			"**/dist/**",
 			"**/node_modules/**",

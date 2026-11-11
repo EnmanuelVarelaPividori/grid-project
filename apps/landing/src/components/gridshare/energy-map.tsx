@@ -310,11 +310,11 @@ export function EnergyMap() {
 					<polygon
 						fill="none"
 						points="110,70 880,60 900,520 640,560 120,540"
-						stroke="#536C44"
+						stroke="#4A7A35"
 						strokeDasharray="6 6"
 						strokeWidth="1.5"
 					/>
-					<circle cx="480" cy="330" fill="none" r="150" stroke="#536C44" strokeDasharray="2 6" strokeOpacity=".25" />
+					<circle cx="480" cy="330" fill="none" r="150" stroke="#4A7A35" strokeDasharray="2 6" strokeOpacity=".25" />
 				</svg>
 				{showGrid && (
 					<>
